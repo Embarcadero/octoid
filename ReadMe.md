@@ -10,6 +10,10 @@ Octoid is a tool for translating Objective-C headers into Delphi code. It is int
 
 Please refer to the [license](https://github.com/Embarcadero/octoid/blob/main/LICENSE) regarding conditions of use for the code of Octoid.
 
+## Technical details
+
+If you are interested in the details about how the Octoid code works, please refer to the [technical details readme](https://github.com/Embarcadero/octoid/blob/main/TechDetails.md).
+
 ## Dependencies
 
 Octoid depends on Erik Van Bilsen's libraries:
