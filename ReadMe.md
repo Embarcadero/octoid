@@ -6,6 +6,10 @@ Octoid is a tool for translating Objective-C headers into Delphi code. It is int
 
 (Octoid is an acronym for Objective-C TranslatOr Into Delphi)
 
+## License
+
+Please refer to the [license](https://github.com/Embarcadero/octoid/blob/main/LICENSE) regarding conditions of use for the code of Octoid.
+
 ## Dependencies
 
 Octoid depends on Erik Van Bilsen's libraries:
@@ -58,74 +62,7 @@ Extras: additional options to be passed to libClang
 ## Transforming 3rd party frameworks
 
 It is possible to transform 3rd party frameworks, by copying the `.framework` folder into the `System\Library\Frameworks` folder of the nominated platform SDK.
-It should be noted however, if the framework depends on any other 3rd party frameworks (including from the same vendor), they will need to be copied also, in order for a successful transform
-Once a 3rd party framework has been copied, when the desktop app is restarted, or when a switch is made between SDKs, it will include the 3rd party framework in the frameworks list
-
-## Translation Process
-
-### TObjCHeaderTranslator.Translate
-
-This method is central to the translation process. By way of `CreateCombinedHeaderFile` it searches for .h files in the frameworks Headers folder, and combines them into a temporary .h file which is passed to the `ParseTranslationUnit` method. The result is a translation of all the declarations in the framework and dependent libraries. The `Cursor` property of `TranslationUnit` is the root cursor for accessing all the declarations
-
-### TCustomTranslator.VisitTypes
-
-The `VisitTypes` method, which is passed to `VisitChildren` method of the root `Cursor` in `TCustomTranslator.AnalyzeTypes`, traverses all declaration cursors, and adds the cursor to the respective list, depending on the type of declaration, i.e.:
-
-* `FConsts` for constants and enumerated constants
-* `FTypes` for structs, unions, and typedefs (includes interface types in Objective-C)
-* `FDeclaredTypes` for types that may be 'forward' declared
-
-`HandleTypeDeclaration` is overridden in `TObjCHeaderTranslator` and adds the cursor to these lists:
-
-* `FClasses` for types to be declared as interfaces/classes
-* `FCategories` for types to be 'aggregated' to classes
-* `FExportedContsts` for types to be declared as functions that retrieve the value from the framework
-
-### TObjCHeaderTranslator.HandleTypeDeclaration
-
-Adds declarations to the respective lists, and for Objective-C interface and category declarations, does 'discovery' of block method types that need to be added to the type declarations. 
-
-### TObjCHeaderTranslator.DiscoverBlockMethods
-
-Iterates the methods of the declared type, and if a parameter that is a block method type is discovered, adds the method to the `FBlockMethods` list, including any parameters declared in the block method type.
-
-### TCustomTranslator.WriteDelphiSource
-
-Writes the unit source, i.e.
-
-* Copyright header (if any)
-* Unit name based on the platform and framework
-* Interface uses clause based on the dependent frameworks. **NOTE: This needs attention as it can result in frameworks being added that are not dependencies**
-* Constants
-* Types - in the order of: forward declarations, types, classes
-* Functions
-* Implementation uses clause
-* Exported const functions
-* Module load handling
-
-### TCustomTranslator.WriteTypes
-
-Writes the forward declarations (e.g. Objective-C interfaces), types (e.g. structs translated to records), classes (Objective-C) and exported const functions
-
-### TObjCHeaderTranslator.WriteClasses
-
-Handles writing of block methods (see also `TObjCHeaderTranslator.DiscoverBlockMethods`), classes and exported const function prototypes.
-
-### TObjCHeaderTranslator.WriteInterfaceType
-
-Writes the 'Interface Class', 'Interface Instance' and Objective-C import class declarations.
-
-#### TObjCHeaderTranslator.WriteInterfaceClassType and TObjCHeaderTranslator.WriteInterfaceInstanceType
-
-Writes the declaration header, and enumerates the methods and adds them to `FMethods`. When adding the method, a check is made for existing methods so as to resolve method overloading. The overloads are then resolved, the methods are sorted in alpha order and written out. At the end of `TObjCHeaderTranslator.WriteInterfaceInstanceType` the Objective-C import class declaration is written.
-
-## Conversion
-
-### Types
-
-Conversion of simple types is achieved via the `TypeMap` dictionary. Most types are set up in the overridden `TObjCHeaderTranslator.DoSetupTypeMap` method, however it might be possible to push some back to `TCustomTranslator.SetupTypeMap`.
-
-Actual conversion is done in the `TObjCHeaderTranslator.GetDelphiTypeName` method.
+It should be noted however, if the framework depends on any other 3rd party frameworks (including from the same vendor), they will need to be copied also, in order for a successful transform. Once a 3rd party framework has been copied, when the desktop app is restarted, or when a switch is made between SDKs, it will include the 3rd party framework in the frameworks list
 
 ## Dealing with fatal errors during translation
 
@@ -143,7 +80,7 @@ Commonly, this will be due to missing header files, e.g. you may see an output l
 \\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/Foundation.framework/Headers/NSObject.h:6:9: error: 'objc/NSObject.h' file not found
 ```
 
-As per the error messages, e.g. `error: 'libkern/i386/_OSByteOrder.h' file not found`, it is expecting a file to be present that has not been imported. For this particular error, one or more files are missing from `\usr\include\libkern\i386`
+As per the error messages, e.g. `error: 'libkern/i386/_OSByteOrder.h' file not found`, it is expecting a file to be present that has not been imported. For this particular error, one or more files are missing from `\usr\include\libkern\i386`.
 
 To resolve this particular kind of issue, you will need to add the required folders/files to the SDK configuration. In Delphi: 
 
@@ -159,6 +96,8 @@ To resolve this particular kind of issue, you will need to add the required fold
 10. Repeat steps 4-7 (and 8 if necessary) for any other folders that are missing, as per the errors
 11. Click `Update Local File Cache`
 12. Click Save
+
+(For macOS, you will likely need to also add: `/usr/include/secure`, `/usr/include/objc`, `/usr/include/c++`, and `/usr/include/libDER`)
 
 Attempt to translate the desired framework again. You may note a new set of errors, so repeat the above process until the framework translates successfully.
 
