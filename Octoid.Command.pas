@@ -169,7 +169,7 @@ begin
       '(default is all frameworks in the SDK)', [cSwitchFramework]));
     Writeln(Format('%s <out> - (optional) directory where the output .pas files should be placed ' +
       '(default is current directory)', [cSwitchOutputPath]));
-    Writeln(Format('%s <typemap> - (optional) typemap containing equals separated values (can override existing mappings)', [cSwitchOutputPath]));
+    Writeln(Format('%s <typemap> - (optional) typemap containing equals separated values (can override existing mappings)', [cSwitchTypeMapFile]));
     Writeln(Format('%s - dump AST and Types files into the output folder', [cSwitchDump]));
     Writeln;
     Writeln('Extras: additional options to be passed to libClang');
