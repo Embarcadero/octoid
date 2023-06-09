@@ -1,14 +1,23 @@
 # Octoid
 
-## Intro
+<p align="center"><img src="logo/OctoidMainLogoheader.png" alt=" " height="240" width="351" /></p>
+
+
+## Intro 
 
 Octoid is a tool for translating Objective-C headers into Delphi code. It is intended as a replacement for SDKTransform which ships with Delphi.
-
 (Octoid is an acronym for Objective-C TranslatOr Into Delphi)
+
+
+<p align="center" style="margin: 50px 0 0 0;"><img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+</p> 
 
 ## License
 
 Please refer to the [license](https://github.com/Embarcadero/octoid/blob/main/LICENSE) regarding conditions of use for the code of Octoid.
+
 
 ## Technical details
 
@@ -33,11 +42,23 @@ In order to run Octoid, you will need to download and install LLVM. At time of w
 
 [This is a link to the releases page](https://releases.llvm.org/) which lists all releases
 
+<p align="center"><img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+</p> 
+
 ## Desktop App
 
 The desktop app is a GUI (VCL) application for Windows. It allows you to select an SDK, select a framework and transform it into a Delphi unit.
 
 The options page allows you customize how a banner (if required) is inserted into the unit.
+
+<p align="center" style="margin: 25px 0 25px 0;"><img src="images/OctoidDesktop.png" alt=" " height="586" width="800" /></p>
+
+<p align="center"><img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+</p> 
 
 ## Commandline App
 
@@ -63,12 +84,22 @@ Options:
 
 Extras: additional options to be passed to libClang
 
-## Transforming 3rd party frameworks
+<p align="center"><img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+</p> 
+
+## Transforming 3rd party frameworks 
 
 It is possible to transform 3rd party frameworks, by copying the `.framework` folder into the `System\Library\Frameworks` folder of the nominated platform SDK.
 It should be noted however, if the framework depends on any other 3rd party frameworks (including from the same vendor), they will need to be copied also, in order for a successful transform. Once a 3rd party framework has been copied, when the desktop app is restarted, or when a switch is made between SDKs, it will include the 3rd party framework in the frameworks list
 
-## Dealing with fatal errors during translation
+<p align="center"><img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+</p> 
+
+## Dealing with fatal errors during translationwidth="40" /></p> 
 
 If a conversion fails to produce a translation using the desktop app, the output window will show and be at the bottom of the output so as to highlight the errors.
 
@@ -121,27 +152,9 @@ Other errors may include missing frameworks, e.g.:
 
 The process for resolving missing frameworks is similar to that of above, except applies to the Frameworks section in the SDK configuration. The example above indicates that the `OpenGL` framework is missing and will need to be imported
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<p align="center"><img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+</p> 
 
 
