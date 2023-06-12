@@ -385,6 +385,7 @@ begin
     for I := 0 to FExtraSwitches.Count - 1 do
       FProject.AddCmdLineArg(FExtraSwitches[I]);
 
+    FTranslator.Free;
     if not FIsDump then
       FTranslator := TObjCHeaderTranslator.Create(FProject)
     else
