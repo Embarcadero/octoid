@@ -340,6 +340,7 @@ begin
     MessageDlg(Format(cTranslationSuccess, [FCommand.Framework, FCommand.OutputFile]), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOK], 0)
   else
   begin
+    ProgressBar.Position := 0;
     FOutput.Show;
     FOutput.ScrollToBottom;
   end;
