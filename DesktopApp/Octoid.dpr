@@ -1,6 +1,9 @@
 program Octoid;
 
+{$I Octoid.Debug.inc}
+
 uses
+  Octoid.Include,
   Vcl.Forms,
   Vcl.Themes,
   Vcl.Styles,
@@ -11,7 +14,6 @@ uses
 {$R *.res}
 
 begin
-  ReportMemoryLeaksOnShutdown := True;
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   TStyleManager.TrySetStyle('Onyx Blue');
