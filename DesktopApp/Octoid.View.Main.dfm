@@ -72,7 +72,7 @@ object MainView: TMainView
     end
     object DumpASTButton: TButton
       AlignWithMargins = True
-      Left = 223
+      Left = 375
       Top = 4
       Width = 102
       Height = 30
@@ -105,6 +105,7 @@ object MainView: TMainView
       Top = 4
       Width = 102
       Height = 30
+      Hint = 'Change options for code generation and the Octoid UI'
       Margins.Left = 6
       Margins.Top = 0
       Margins.Right = 0
@@ -115,15 +116,19 @@ object MainView: TMainView
     end
     object IgnoreUmbrellaCheckBox: TCheckBox
       AlignWithMargins = True
-      Left = 337
+      Left = 229
       Top = 7
       Width = 137
       Height = 24
+      Hint = 
+        'Some framework "umbrella" headers are known to cause problems. C' +
+        'heck this checkbox to ignore it'
       Margins.Left = 12
       Align = alLeft
       Caption = 'Ignore umbrella header'
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 4
-      Visible = False
     end
   end
   object SDKPathPanel: TPanel

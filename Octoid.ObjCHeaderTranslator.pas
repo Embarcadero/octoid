@@ -64,8 +64,13 @@ type
     procedure SortMethods;
   end;
 
-  TObjCTranslateOption = (UnsupportedConstTypeComments, DeprecationComments, TodoComments);
+  TObjCTranslateOption = (UnsupportedConstTypeComments, DeprecationComments, DeprecationCommentFirst, TodoComments);
   TObjCTranslateOptions = set of TObjCTranslateOption;
+  TObjCTranslateOptionsHelper = record helper for TObjCTranslateOptions
+    function WantDeprecationComments: Boolean;
+    function WantDeprecationCommentFirst: Boolean;
+    function WantDeprecationCommentSameLine: Boolean;
+  end;
 
   TObjCHeaderProject = class(TCustomTranslatorProject)
   private
@@ -198,6 +203,23 @@ type
 
 const
   cCombinedHeaderFileName = '_combinedheaders_.h';
+
+{ TObjCTranslateOptionsHelper }
+
+function TObjCTranslateOptionsHelper.WantDeprecationCommentFirst: Boolean;
+begin
+  Result := WantDeprecationComments and (TObjCTranslateOption.DeprecationCommentFirst in Self);
+end;
+
+function TObjCTranslateOptionsHelper.WantDeprecationComments: Boolean;
+begin
+  Result := TObjCTranslateOption.DeprecationComments in Self;
+end;
+
+function TObjCTranslateOptionsHelper.WantDeprecationCommentSameLine: Boolean;
+begin
+  Result := WantDeprecationComments and not (TObjCTranslateOption.DeprecationCommentFirst in Self);
+end;
 
 { TParamTypeNamesHelper }
 
@@ -1085,13 +1107,15 @@ begin
   for LMethod in FMethods do
   begin
     // if LMethod.ObjCMethodName.CountChar(':') > 1 then
+    if not LMethod.Deprecation.IsEmpty and FProject.ObjCTranslateOptions.WantDeprecationCommentFirst then
+      Writer.WriteLn('// %s', [LMethod.Deprecation]);
     if LMethod.IsNameMismatched then
       Writer.WriteLn('[MethodName(''%s'')]', [LMethod.ObjCMethodName]);
     Writer.Write(LMethod.GetDeclaration);
     if LMethod.IsOverload then
       Writer.Write('; overload');
     Writer.Write('; cdecl;');
-    if not LMethod.Deprecation.IsEmpty and (TObjCTranslateOption.DeprecationComments in FProject.ObjCTranslateOptions) then
+    if not LMethod.Deprecation.IsEmpty and FProject.ObjCTranslateOptions.WantDeprecationCommentSameLine then
       Writer.Write(' // %s', [LMethod.Deprecation]);
     Writer.WriteLn('');
   end;

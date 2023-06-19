@@ -37,10 +37,13 @@ type
     UITab: TTabSheet;
     ThemeLabel: TLabel;
     ThemeComboBox: TComboBox;
+    DeprecationCommentsPanel: TPanel;
+    DeprecationCommentFirstCheckBox: TCheckBox;
     procedure OKActionExecute(Sender: TObject);
     procedure OKActionUpdate(Sender: TObject);
     procedure ThemeComboBoxCloseUp(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
+    procedure DeprecationCommentsCheckBoxClick(Sender: TObject);
   private
     FActiveStyleName: string;
     FConfig: TOctoidConfig;
@@ -77,6 +80,17 @@ begin
   end;
 end;
 
+procedure TOptionsView.DeprecationCommentsCheckBoxClick(Sender: TObject);
+begin
+  if not DeprecationCommentsCheckBox.Checked then
+  begin
+    DeprecationCommentFirstCheckBox.Checked := False;
+    DeprecationCommentFirstCheckBox.Enabled := False;
+  end
+  else
+    DeprecationCommentFirstCheckBox.Enabled := True;
+end;
+
 procedure TOptionsView.DoShow;
 begin
   FConfig := TOctoidConfig.Current;
@@ -92,6 +106,8 @@ begin
   end;
   ConstTypeCommentsCheckBox.Checked := FConfig.IncludeConstTypeComments;
   DeprecationCommentsCheckBox.Checked := FConfig.IncludeDeprecationComments;
+  if DeprecationCommentsCheckBox.Checked then
+    DeprecationCommentFirstCheckBox.Checked := FConfig.DeprecationCommentFirst;
   TodoCommentsCheckbox.Checked := FConfig.IncludeTodoComments;
   ErrorLimitEdit.Text := FConfig.ErrorLimit.ToString;
   inherited;
@@ -110,6 +126,7 @@ begin
   FConfig.UseBannerAsIs := UseBannerAsIsCheckBox.Checked;
   FConfig.IncludeConstTypeComments := ConstTypeCommentsCheckBox.Checked;
   FConfig.IncludeDeprecationComments := DeprecationCommentsCheckBox.Checked;
+  FConfig.DeprecationCommentFirst := DeprecationCommentFirstCheckBox.Checked;
   FConfig.IncludeTodoComments := TodoCommentsCheckbox.Checked;
   FConfig.ErrorLimit := StrToInt(ErrorLimitEdit.Text);
   FConfig.Save;

@@ -55,7 +55,7 @@ object OptionsView: TOptionsView
     Top = 0
     Width = 623
     Height = 345
-    ActivePage = UITab
+    ActivePage = TranslatorTab
     Align = alClient
     TabOrder = 1
     object TranslatorTab: TTabSheet
@@ -152,18 +152,6 @@ object OptionsView: TOptionsView
         Caption = 'Include TODO comments'
         TabOrder = 2
       end
-      object DeprecationCommentsCheckBox: TCheckBox
-        AlignWithMargins = True
-        Left = 7
-        Top = 156
-        Width = 605
-        Height = 17
-        Margins.Left = 7
-        Margins.Top = 6
-        Align = alTop
-        Caption = 'Include deprecation comments'
-        TabOrder = 3
-      end
       object ConstTypeCommentsCheckBox: TCheckBox
         AlignWithMargins = True
         Left = 7
@@ -174,7 +162,53 @@ object OptionsView: TOptionsView
         Margins.Top = 6
         Align = alTop
         Caption = 'Include unsupported const type comments'
+        TabOrder = 3
+      end
+      object DeprecationCommentsPanel: TPanel
+        Left = 0
+        Top = 150
+        Width = 615
+        Height = 55
+        Align = alTop
+        BevelOuter = bvNone
         TabOrder = 4
+        object DeprecationCommentsCheckBox: TCheckBox
+          AlignWithMargins = True
+          Left = 7
+          Top = 6
+          Width = 605
+          Height = 17
+          Hint = 'Includes a comment with the method, regarding deprecation'
+          Margins.Left = 7
+          Margins.Top = 6
+          Align = alTop
+          Caption = 'Include deprecation comments'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 0
+          OnClick = DeprecationCommentsCheckBoxClick
+          ExplicitLeft = 20
+          ExplicitTop = -4
+          ExplicitWidth = 592
+        end
+        object DeprecationCommentFirstCheckBox: TCheckBox
+          AlignWithMargins = True
+          Left = 20
+          Top = 32
+          Width = 592
+          Height = 17
+          Hint = 
+            'Otherwise the comment appears on the same line as the method, af' +
+            'ter the declaration'
+          Margins.Left = 20
+          Margins.Top = 6
+          Align = alTop
+          Caption = 'Before the method (and any method attributes)'
+          TabOrder = 1
+          ExplicitLeft = 7
+          ExplicitTop = 156
+          ExplicitWidth = 605
+        end
       end
     end
     object BannerTab: TTabSheet

@@ -23,6 +23,7 @@ type
   private
     FAdditionalOptions: string;
     FBannerPosition: TBannerPosition;
+    FDeprecationCommentFirst: Boolean;
     FErrorLimit: Integer;
     FIncludeConstTypeComments: Boolean;
     FIncludeDeprecationComments: Boolean;
@@ -42,6 +43,7 @@ type
   public
     property AdditionalOptions: string read FAdditionalOptions write FAdditionalOptions;
     property BannerPosition: TBannerPosition read FBannerPosition write FBannerPosition;
+    property DeprecationCommentFirst: Boolean read FDeprecationCommentFirst write FDeprecationCommentFirst;
     property ErrorLimit: Integer read FErrorLimit write FErrorLimit;
     property IncludeConstTypeComments: Boolean read FIncludeConstTypeComments write FIncludeConstTypeComments;
     property IncludeDeprecationComments: Boolean read FIncludeDeprecationComments write FIncludeDeprecationComments;

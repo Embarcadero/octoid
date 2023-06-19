@@ -316,6 +316,8 @@ begin
     Include(LTranslateOptions, TObjCTranslateOption.UnsupportedConstTypeComments);
   if FConfig.IncludeDeprecationComments then
     Include(LTranslateOptions, TObjCTranslateOption.DeprecationComments);
+  if FConfig.DeprecationCommentFirst then
+    Include(LTranslateOptions, TObjCTranslateOption.DeprecationCommentFirst);
   if FConfig.IncludeTodoComments then
     Include(LTranslateOptions, TObjCTranslateOption.TodoComments);
   FCommand.Project.ObjCTranslateOptions := LTranslateOptions;
