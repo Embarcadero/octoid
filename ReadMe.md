@@ -99,7 +99,7 @@ It should be noted however, if the framework depends on any other 3rd party fram
 <img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
 </p> 
 
-## Dealing with fatal errors during translationwidth="40" /></p> 
+## Dealing with fatal errors during translation
 
 If a conversion fails to produce a translation using the desktop app, the output window will show and be at the bottom of the output so as to highlight the errors.
 
