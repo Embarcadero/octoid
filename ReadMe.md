@@ -64,6 +64,7 @@ The options page allows you customize how a banner (if required) is inserted int
 
 The commandline app is provided for automated transforms, or if you just prefer the command line. The usage is as follows:
 
+```
 Octoid [Options] [Extras]
 
 Options:
@@ -83,7 +84,7 @@ Options:
 --typemap <typemap> - (optional) typemap containing equals separated values (can override existing mappings)
 
 Extras: additional options to be passed to libClang
-
+```
 <p align="center"><img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
 <img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
 <img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
