@@ -118,7 +118,9 @@ type
     FTokenMap: TDictionary<string, string>;
     FTranslationUnit: ITranslationUnit;
     FTypeMap: TDictionary<string, string>;
+    FTypeUnitMap: TDictionary<string, string>;
     FTypeMapFileName: string;
+    FTypeUnitMapFileName: string;
     FTypes: TList<TCursor>;
     FUnitName: string;
     FVisitedTypes: TDictionary<TCursor, Integer>;
@@ -126,13 +128,14 @@ type
     FOnMessage: TMessageEvent;
     procedure AnalyzeDeclaredTypes;
     procedure AnalyzeTypes;
-    function FindConstCursor(const AType: TType; out ACursor: TCursor): Boolean;
     function GetArrayTypeName(const AType: TType): string;
     function GetBinaryOperand(const ASource: string): string;
+    procedure LoadDictionaryFromFile(const AFileName: string; const ADictionary: TDictionary<string, string>);
     procedure Prepare;
     procedure SetupBuiltinTypes;
     procedure SetupReservedWords;
     procedure SetupTypeMap;
+    procedure SetupTypeUnitMap;
     procedure TrackIndirections(const AType: TType);
     function VisitConstantsFirstPass(const ACursor, AParent: TCursor): TChildVisitResult;
     function VisitConstantsSecondPass(const ACursor, AParent: TCursor): TChildVisitResult;
@@ -176,6 +179,7 @@ type
     procedure DoMessage(const AMessage: string; const AArgs: array of const); overload;
     procedure DoPrepare; virtual;
     procedure DoSetupTypeMap; virtual;
+    procedure DoSetupTypeUnitMap; virtual;
     function FindFieldUnion(const ACursor: TCursor; out AUnionCursor: TCursor): Boolean;
     function GenerateAnonymousTypeName(const AName: string): string; virtual;
     function GetCursorSource(const ACursor: TCursor; const ADiagnostic: Boolean = False): string;
@@ -207,6 +211,7 @@ type
     property TranslationUnit: ITranslationUnit read FTranslationUnit;
     property TokenMap: TDictionary<string, string> read FTokenMap;
     property TypeMap: TDictionary<string, string> read FTypeMap;
+    property TypeUnitMap: TDictionary<string, string> read FTypeUnitMap;
     property Types: TList<TCursor> read FTypes;
     property Writer: TSourceWriter read FWriter;
   public
@@ -214,6 +219,7 @@ type
     destructor Destroy; override;
     function Run: Boolean; virtual;
     property TypeMapFileName: string read FTypeMapFileName write FTypeMapFileName;
+    property TypeUnitMapFileName: string read FTypeUnitMapFileName write FTypeUnitMapFileName;
     property OnMessage: TMessageEvent read FOnMessage write FOnMessage;
   end;
 
@@ -316,6 +322,7 @@ begin
   );
   FReservedWords := TDictionary<string, Integer>.Create(TIStringComparer.Ordinal);
   FTypeMap := TDictionary<string, string>.Create;
+  FTypeUnitMap := TDictionary<string, string>.Create;
   FTokenMap := TDictionary<string, string>.Create;
   FMacros := TDictionary<string, TMacroInfo>.Create;
   FMaxIndirectionCount := TDictionary<string, Integer>.Create;
@@ -324,6 +331,7 @@ begin
   SetupBuiltinTypes;
   SetupReservedWords;
   SetupTypeMap;
+  SetupTypeUnitMap;
   SetupTokenMap;
 end;
 
@@ -335,6 +343,7 @@ begin
   FMaxIndirectionCount.Free;
   FTokenMap.Free;
   FTypeMap.Free;
+  FTypeUnitMap.Free;
   FReservedWords.Free;
   FVisitedTypes.Free;
   FDeclaredTypes.Free;
@@ -583,25 +592,43 @@ begin
   // Override in descendant
 end;
 
-procedure TCustomTranslator.SetupTypeMap;
+procedure TCustomTranslator.DoSetupTypeUnitMap;
+begin
+  // Override in descendant
+end;
+
+procedure TCustomTranslator.LoadDictionaryFromFile(const AFileName: string; const ADictionary: TDictionary<string, string>);
 var
   LTypes: TStrings;
   I: Integer;
 begin
-  // "Standard" mapping
-  DoSetupTypeMap;
-  // Allow file-based overrides
-  if TFile.Exists(FTypeMapFileName) then
+  if TFile.Exists(AFileName) then
   begin
     LTypes := TStringList.Create;
     try
-      LTypes.LoadFromFile(FTypeMapFileName);
+      LTypes.LoadFromFile(AFileName);
       for I := 0 to LTypes.Count - 1 do
-        FTypeMap.AddOrSetValue(LTypes.Names[I], LTypes.ValueFromIndex[I]);
+        ADictionary.AddOrSetValue(LTypes.Names[I], LTypes.ValueFromIndex[I]);
     finally
       LTypes.Free;
     end;
   end;
+end;
+
+procedure TCustomTranslator.SetupTypeMap;
+begin
+  // "Standard" mapping
+  DoSetupTypeMap;
+  // Allow file-based overrides
+  LoadDictionaryFromFile(FTypeMapFileName, FTypeMap);
+end;
+
+procedure TCustomTranslator.SetupTypeUnitMap;
+begin
+  // "Standard" mapping
+  DoSetupTypeUnitMap;
+  // Allow file-based overrides
+  LoadDictionaryFromFile(FTypeUnitMapFileName, FTypeUnitMap);
 end;
 
 function TCustomTranslator.GetValidIdentifier(const AValue: string): string;
@@ -2150,11 +2177,6 @@ end;
 procedure TCustomTranslator.HandleWriteType(const ACursor: TCursor);
 begin
   // Override in descendant
-end;
-
-function TCustomTranslator.FindConstCursor(const AType: TType; out ACursor: TCursor): Boolean;
-begin
-  Result := False;
 end;
 
 procedure TCustomTranslator.WriteTypedefType(const ACursor: TCursor);

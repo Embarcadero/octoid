@@ -113,9 +113,11 @@ type
     FCombinedHeaderFileName: string;
     FExportedConsts: TList<TCursor>;
     FIncludedFrameworks: TStrings;
+    FInterfaceUnits: TStrings;
     FMethods: TDelphiMethods;
     FNeedsMacapiHelpers: Boolean;
     FProject: TObjCHeaderProject;
+    procedure CheckTypeUnitMap(const ATypeName: string);
     function CreateCombinedHeaderFile: Boolean;
     procedure DiscoverBlockMethods(const ACursor: TCursor; const AClassName: string = '');
     procedure DiscoverBlockMethodParams(const ACursor: TCursor; const AClassName: string);
@@ -145,6 +147,7 @@ type
     function CanWriteToDo: Boolean; override;
     procedure DoPrepare; override;
     procedure DoSetupTypeMap; override;
+    procedure DoSetupTypeUnitMap; override;
     function GenerateAnonymousTypeName(const AName: string): string; override;
     function GetBinaryOperatorTokens(const ASource: string): TArray<string>; override;
     function GetDelphiTypeName(AType: TType; const AInParamDecl: Boolean = False; const AOutIsAnonymous: PBoolean = nil): string; override;
@@ -496,6 +499,7 @@ begin
   inherited;
   FProject := TObjCHeaderProject(AProject);
   FIncludedFrameworks := TStringList.Create;
+  FInterfaceUnits := TStringList.Create;
   FBlockMethods := TBlockMethods.Create;
   FMethods := TDelphiMethods.Create;
   FClasses := TList<TCursor>.Create;
@@ -506,6 +510,7 @@ end;
 destructor TObjCHeaderTranslator.Destroy;
 begin
   FIncludedFrameworks.Free;
+  FInterfaceUnits.Free;
   FBlockMethods.Free;
   FMethods.Free;
   FClasses.Free;
@@ -521,6 +526,7 @@ begin
   FExportedConsts.Clear;
   FBlockMethods.Clear;
   FIncludedFrameworks.Clear;
+  FInterfaceUnits.Clear;
 end;
 
 procedure TObjCHeaderTranslator.SetupTokenMap;
@@ -605,6 +611,12 @@ begin
   TypeMap.Add('ValueType', 'Pointer');
 end;
 
+procedure TObjCHeaderTranslator.DoSetupTypeUnitMap;
+begin
+  TypeUnitMap.Add('id', 'Macapi.ObjCRuntime');
+  TypeUnitMap.Add('dispatch_queue_t', 'Macapi.Dispatch');
+end;
+
 function TObjCHeaderTranslator.GenerateAnonymousTypeName(const AName: string): string;
 begin
   Result := ''; // Todo?
@@ -644,6 +656,14 @@ end;
 function TObjCHeaderTranslator.CanWriteToDo: Boolean;
 begin
   Result := TObjCTranslateOption.TodoComments in FProject.ObjCTranslateOptions;
+end;
+
+procedure TObjCHeaderTranslator.CheckTypeUnitMap(const ATypeName: string);
+var
+  LUnitName: string;
+begin
+  if TypeUnitMap.TryGetValue(ATypeName, LUnitName) and (FInterfaceUnits.IndexOf(LUnitName) = -1) then
+    FInterfaceUnits.Add(LUnitName);
 end;
 
 procedure TObjCHeaderTranslator.DiscoverBlockMethodParams(const ACursor: TCursor; const AClassName: string);
@@ -785,6 +805,7 @@ begin
     for I := 0 to AType.ArgTypeCount - 1 do
     begin
       LTypeName := GetDelphiTypeName(AType.ArgTypes[I], True);
+      CheckTypeUnitMap(LTypeName);
       LArgument := Format('param%d: %s', [I + 1, LTypeName]);
       LBuilder.Append(LArgument);
       if I < AType.ArgTypeCount - 1 then
@@ -1216,7 +1237,7 @@ procedure TObjCHeaderTranslator.WriteExportedConstFunctions;
 var
   LCursor: TCursor;
   LUnderlyingType: TType;
-  LTypeName, LUnderylingTypeName, LLiteral, LIdentifier: string;
+  LTypeName, LUnderylingTypeName, LLiteral: string;
   LLiteralKind: TCursorKind;
   LUnderlyingTypeKind: TTypeKind;
 begin
@@ -1591,9 +1612,15 @@ begin
   Writer.StartSection('uses');
   Writer.Indent;
   if SourceUnitName.Equals('Macapi.CoreFoundation') then
-    Writer.Write('Macapi.ObjectiveC, %s.CocoaTypes', [LNamespace])
+    Writer.Write('Macapi.ObjectiveC')
   else
-    Writer.Write('Macapi.ObjectiveC, Macapi.CoreFoundation, %s.CocoaTypes', [LNamespace]);
+    Writer.Write('Macapi.ObjectiveC, Macapi.CoreFoundation');
+  for I := 0 to FInterfaceUnits.Count - 1 do
+  begin
+    Writer.Write(', ');
+    Writer.Write(FInterfaceUnits[I]);
+  end;
+  Writer.Write(', %s.CocoaTypes', [LNamespace]);
   for I := 0 to FIncludedFrameworks.Count - 1 do
   begin
     // CoreFoundation already included

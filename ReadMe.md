@@ -81,7 +81,9 @@ Options:
 
 --out <out> - (optional) directory where the output .pas files should be placed (default is current directory)
 
---typemap <typemap> - (optional) typemap containing equals separated values (can override existing mappings)
+--typemap <typemap> - (optional) map of types containing equals separated values (can override existing mappings)
+
+--typeunitmap <typeunitmap> - (optional) map of types to units containing equals separated values (can override existing mappings)
 
 Extras: additional options to be passed to libClang
 ```

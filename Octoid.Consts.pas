@@ -22,6 +22,7 @@ const
   cSwitchTargetPlatform = '--platform';
   cSwitchOutputPath = '--out';
   cSwitchTypeMapFile = '--typemap';
+  cSwitchTypeUnitMapFile = '--typeunitmap';
   cSwitchDump = '--dump';
   cSwitchErrors = '--errors';
 

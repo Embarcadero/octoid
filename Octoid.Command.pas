@@ -169,7 +169,8 @@ begin
       '(default is all frameworks in the SDK)', [cSwitchFramework]));
     Writeln(Format('%s <out> - (optional) directory where the output .pas files should be placed ' +
       '(default is current directory)', [cSwitchOutputPath]));
-    Writeln(Format('%s <typemap> - (optional) typemap containing equals separated values (can override existing mappings)', [cSwitchTypeMapFile]));
+    Writeln(Format('%s <typemap> - (optional) map of types containing equals separated values (can override existing mappings)', [cSwitchTypeMapFile]));
+    Writeln(Format('%s <typeunitmap> - (optional) map of types to units containing equals separated values (can override existing mappings)', [cSwitchTypeUnitMapFile]));
     Writeln(Format('%s - dump AST and Types files into the output folder', [cSwitchDump]));
     Writeln;
     Writeln('Extras: additional options to be passed to libClang');
@@ -236,6 +237,8 @@ begin
     FFramework := LValue;
   if FindSwitchValue(cSwitchTypeMapFile, LValue) and CheckPathExists(LValue, cSwitchTypeMapFile) then
     FTranslator.TypeMapFileName := LValue;
+  if FindSwitchValue(cSwitchTypeUnitMapFile, LValue) and CheckPathExists(LValue, cSwitchTypeUnitMapFile) then
+    FTranslator.TypeUnitMapFileName := LValue;
   if FindSwitchValue(cSwitchOutputPath, LValue) then
   begin
     if CheckPathExists(LValue, cSwitchOutputPath) then
