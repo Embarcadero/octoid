@@ -1216,16 +1216,27 @@ procedure TObjCHeaderTranslator.WriteExportedConstFunctions;
 var
   LCursor: TCursor;
   LUnderlyingType: TType;
-  LTypeName, LUnderylingTypeName, LLiteral: string;
+  LTypeName, LUnderylingTypeName, LLiteral, LIdentifier: string;
   LLiteralKind: TCursorKind;
+  LUnderlyingTypeKind: TTypeKind;
 begin
   for LCursor in FExportedConsts do
   begin
     if IsSupportedExportedConst(LCursor.CursorType) and not (LCursor.IsDefinition and not IsSupportedDefinedConst(LCursor)) then
     begin
       LUnderlyingType := GetUnderlyingType(LCursor.CursorType);
+      LUnderlyingTypeKind := LUnderlyingType.Kind;
       LUnderylingTypeName := GetDelphiTypeName(LUnderlyingType);
+      // https://github.com/Embarcadero/octoid/issues/20
+      if LUnderylingTypeName.Equals('P__CFString') or LUnderylingTypeName.Equals('CFStringRef') then
+      begin
+        LUnderlyingTypeKind := TTypeKind.ObjCObjectPointer;
+        LUnderylingTypeName := 'NSString';
+      end;
       LTypeName := GetDelphiTypeName(LCursor.CursorType);
+      // https://github.com/Embarcadero/octoid/issues/20
+      if LTypeName.Equals('CFStringRef') or LUnderylingTypeName.Equals('NSString') then
+        LTypeName := 'NSString';
       Writer.WriteLn('function %s: %s;', [GetValidIdentifier(LCursor.Spelling), LTypeName]);
       Writer.WriteLn('begin');
       Writer.Indent;
@@ -1268,7 +1279,7 @@ begin
         // Special case for CGFloat
         if LTypeName.Equals('CGFloat') then
           WriteExportedConstCGFloat(LCursor.Spelling)
-        else if LUnderlyingType.Kind in [TTypeKind.TypeDef, TTypeKind.Pointer] then
+        else if LUnderlyingTypeKind in [TTypeKind.TypeDef, TTypeKind.Pointer] then
         begin
           if LTypeName.EndsWith('Ref') then
             Writer.WriteLn('Result := %s(CocoaPointerConst(%s, ''%s''));', [LTypeName, FProject.GetLibraryConstant, LCursor.Spelling])
@@ -1297,7 +1308,8 @@ end;
 procedure TObjCHeaderTranslator.WriteExportedConstProtos;
 var
   LCursor: TCursor;
-  LTypeName, LConstType: string;
+  LTypeName, LConstType, LUnderylingTypeName: string;
+  LUnderlyingType: TType;
 begin
   for LCursor in FExportedConsts do
   begin
@@ -1308,8 +1320,13 @@ begin
     if IsSupportedExportedConst(LCursor.CursorType) and not (LCursor.IsDefinition and not IsSupportedDefinedConst(LCursor)) then
     begin
       LTypeName := GetDelphiTypeName(LCursor.CursorType);
+      LUnderlyingType := GetUnderlyingType(LCursor.CursorType);
+      LUnderylingTypeName := GetDelphiTypeName(LUnderlyingType);
+      // https://github.com/Embarcadero/octoid/issues/20
+      if LUnderylingTypeName.Equals('P__CFString') or LUnderylingTypeName.Equals('CFStringRef') then
+        LTypeName := 'NSString';
       if LCursor.IsDefinition and LTypeName.Equals('NSString') then
-        FNeedsMacapiHelpers := True;
+        FNeedsMacapiHelpers := True; //!!!! Only if StrToNSStr is used, i.e. a literal const
       Writer.WriteLn('function %s: %s;', [GetValidIdentifier(LCursor.Spelling), LTypeName]);
     end
     else if TObjCTranslateOption.UnsupportedConstTypeComments in FProject.ObjCTranslateOptions then
