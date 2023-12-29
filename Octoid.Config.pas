@@ -33,6 +33,8 @@ type
     FSDKPath: string;
     FSelectedFramework: string;
     FStyleName: string;
+    FTypeMapFileName: string;
+    FTypeUnitMapFileName: string;
     FUseBannerAsIs: Boolean;
     procedure CheckSDKPathMRU;
   public
@@ -53,6 +55,8 @@ type
     property SDKPath: string read FSDKPath write FSDKPath;
     property SelectedFramework: string read FSelectedFramework write FSelectedFramework;
     property StyleName: string read FStyleName write FStyleName;
+    property TypeMapFileName: string read FTypeMapFileName write FTypeMapFileName;
+    property TypeUnitMapFileName: string read FTypeUnitMapFileName write FTypeUnitMapFileName;
     property UseBannerAsIs: Boolean read FUseBannerAsIs write FUseBannerAsIs;
   end;
 

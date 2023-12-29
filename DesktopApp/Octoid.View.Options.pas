@@ -3,8 +3,8 @@ unit Octoid.View.Options;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, System.Actions,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.ActnList,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, System.Actions, System.ImageList,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.ActnList, Vcl.ImgList,
   Octoid.Config;
 
 type
@@ -39,11 +39,20 @@ type
     ThemeComboBox: TComboBox;
     DeprecationCommentsPanel: TPanel;
     DeprecationCommentFirstCheckBox: TCheckBox;
+    TypesTab: TTabSheet;
+    TypeMapLabel: TLabel;
+    TypeMapFileNameEdit: TButtonedEdit;
+    TypeUnitMapLabel: TLabel;
+    TypeUnitMapFileNameEdit: TButtonedEdit;
+    ButtonsImageList: TImageList;
+    FileOpenDialog: TFileOpenDialog;
     procedure OKActionExecute(Sender: TObject);
     procedure OKActionUpdate(Sender: TObject);
     procedure ThemeComboBoxCloseUp(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure DeprecationCommentsCheckBoxClick(Sender: TObject);
+    procedure TypeMapFileNameEditRightButtonClick(Sender: TObject);
+    procedure TypeUnitMapFileNameEditRightButtonClick(Sender: TObject);
   private
     FActiveStyleName: string;
     FConfig: TOctoidConfig;
@@ -110,6 +119,8 @@ begin
     DeprecationCommentFirstCheckBox.Checked := FConfig.DeprecationCommentFirst;
   TodoCommentsCheckbox.Checked := FConfig.IncludeTodoComments;
   ErrorLimitEdit.Text := FConfig.ErrorLimit.ToString;
+  TypeMapFileNameEdit.Text := FConfig.TypeMapFileName;
+  TypeUnitMapFileNameEdit.Text := FConfig.TypeUnitMapFileName;
   inherited;
 end;
 
@@ -129,6 +140,8 @@ begin
   FConfig.DeprecationCommentFirst := DeprecationCommentFirstCheckBox.Checked;
   FConfig.IncludeTodoComments := TodoCommentsCheckbox.Checked;
   FConfig.ErrorLimit := StrToInt(ErrorLimitEdit.Text);
+  FConfig.TypeMapFileName := TypeMapFileNameEdit.Text;
+  FConfig.TypeUnitMapFileName := TypeUnitMapFileNameEdit.Text;
   FConfig.Save;
 end;
 
@@ -148,6 +161,18 @@ end;
 procedure TOptionsView.ThemeComboBoxCloseUp(Sender: TObject);
 begin
   TStyleManager.TrySetStyle(ThemeComboBox.Items[ThemeComboBox.ItemIndex]);
+end;
+
+procedure TOptionsView.TypeMapFileNameEditRightButtonClick(Sender: TObject);
+begin
+  if FileOpenDialog.Execute then
+    TypeMapFileNameEdit.Text := FileOpenDialog.FileName;
+end;
+
+procedure TOptionsView.TypeUnitMapFileNameEditRightButtonClick(Sender: TObject);
+begin
+  if FileOpenDialog.Execute then
+    TypeUnitMapFileNameEdit.Text := FileOpenDialog.FileName;
 end;
 
 procedure TOptionsView.CancelButtonClick(Sender: TObject);
