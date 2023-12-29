@@ -387,29 +387,35 @@ end;
 
 function TCustomTranslator.GetCursorSource(const ACursor: TCursor; const ADiagnostic: Boolean = False): string;
 var
-  LLineStart, LLineEnd, LColStart, LColEnd, LOffsetStart, LOffsetEnd: Integer;
+  LLineStart, LLineEnd, LColStart, LColEnd, LOffsetStart, LOffsetEnd, I, LTextColStart, LTextColEnd: Integer;
   LFile: Neslib.Clang.TFile;
   LReference: string;
 begin
+  // https://github.com/Embarcadero/octoid/issues/18
+  //   Previously this routine would read only one line. Now it extracts the source across multiple lines, where needed
   ACursor.Extent.First.GetFileLocation(LFile, LLineStart, LColStart, LOffsetStart);
   ACursor.Extent.Last.GetFileLocation(LFile, LLineEnd, LColEnd, LOffsetEnd);
+  LReference := string.Empty;
   if ADiagnostic then
-    LLineEnd := LLineStart;
-  // Not doing multiple lines
-  if LLineStart = LLineEnd then
   begin
-    LReference := string.Empty;
-    if ADiagnostic then
-    begin
-      LReference := Format(' (%s - %s) (%s - %d:%d)',
-        [ACursor.Kind.Spelling, ACursor.CursorType.KindSpelling, TPath.GetFileName(LFile.Filename.Replace('/', '\')), LLineStart, LColStart]);
-      LColStart := 1;
-      LColEnd := 0; // Obtain the entire line
-    end;
-    Result := FSourceReader.ReadSubstring(LFile.Filename, LLineStart, LColStart, LColEnd - 1);
-    if not LReference.IsEmpty then
-      Result := Result + ' ' + LReference;
+    LReference := Format(' (%s - %s) (%s - %d:%d to %d:%d)',
+      [ACursor.Kind.Spelling, ACursor.CursorType.KindSpelling, TPath.GetFileName(LFile.Filename.Replace('/', '\')),
+        LLineStart, LColStart, LLineEnd, LColEnd]);
   end;
+  for I := LLineStart to LLineEnd do
+  begin
+    LTextColEnd := 0;
+    LTextColStart := 1;
+    if I = LLineStart then
+      LTextColStart := LColStart;
+    if I = LLineEnd then
+      LTextColEnd := LColEnd;
+    if Result <> string.Empty then
+      Result := Result + ' ';
+    Result := Result + FSourceReader.ReadSubstring(LFile.Filename, I, LTextColStart, LTextColEnd - 1).Trim;
+  end;
+  if not LReference.IsEmpty then
+    Result := Result + #13#10 + LReference;
 end;
 
 procedure TCustomTranslator.SetupBuiltinTypes;
