@@ -1,61 +1,68 @@
 object OutputView: TOutputView
   Left = 0
   Top = 0
+  Margins.Left = 5
+  Margins.Top = 5
+  Margins.Right = 5
+  Margins.Bottom = 5
   Caption = 'Output'
-  ClientHeight = 362
-  ClientWidth = 814
+  ClientHeight = 543
+  ClientWidth = 1912
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -17
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poOwnerFormCenter
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 144
+  TextHeight = 21
   object OutputMemo: TMemo
     AlignWithMargins = True
-    Left = 3
-    Top = 3
-    Width = 808
-    Height = 318
+    Left = 5
+    Top = 5
+    Width = 1902
+    Height = 476
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -20
     Font.Name = 'Consolas'
     Font.Style = []
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 0
     WordWrap = False
-    ExplicitTop = 15
-    ExplicitWidth = 923
-    ExplicitHeight = 182
+    ExplicitWidth = 1220
   end
   object BottomPanel: TPanel
     Left = 0
-    Top = 324
-    Width = 814
-    Height = 38
+    Top = 486
+    Width = 1912
+    Height = 57
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Align = alBottom
     BevelOuter = bvNone
-    Padding.Left = 4
-    Padding.Top = 4
-    Padding.Right = 4
-    Padding.Bottom = 4
+    Padding.Left = 6
+    Padding.Top = 6
+    Padding.Right = 6
+    Padding.Bottom = 6
     TabOrder = 1
-    ExplicitLeft = -3
-    ExplicitTop = 523
-    ExplicitWidth = 1096
+    ExplicitWidth = 1230
     object CloseButton: TButton
       AlignWithMargins = True
-      Left = 708
-      Top = 4
-      Width = 102
-      Height = 30
-      Margins.Left = 6
+      Left = 1753
+      Top = 6
+      Width = 153
+      Height = 45
+      Margins.Left = 9
       Margins.Top = 0
       Margins.Right = 0
       Margins.Bottom = 0
@@ -63,7 +70,7 @@ object OutputView: TOutputView
       Caption = 'Close'
       TabOrder = 0
       OnClick = CloseButtonClick
-      ExplicitLeft = 682
+      ExplicitLeft = 1071
     end
   end
 end
