@@ -1273,7 +1273,7 @@ begin
       end;
       LTypeName := GetDelphiTypeName(LCursor.CursorType);
       // https://github.com/Embarcadero/octoid/issues/20
-      if LTypeName.Equals('CFStringRef') or LUnderylingTypeName.Equals('NSString') then
+      if (LTypeName.Equals('CFStringRef') or (LUnderylingTypeName.Equals('NSString') and not LTypeName.Equals('NSErrorDomain'))) then
         LTypeName := 'NSString';
       Writer.WriteLn('function %s: %s;', [GetValidIdentifier(LCursor.Spelling), LTypeName]);
       Writer.WriteLn('begin');
@@ -1363,8 +1363,9 @@ begin
       // https://github.com/Embarcadero/octoid/issues/20
       if LUnderylingTypeName.Equals('P__CFString') or LUnderylingTypeName.Equals('CFStringRef') then
         LTypeName := 'NSString';
-      if LCursor.IsDefinition and LTypeName.Equals('NSString') then
-        FNeedsMacapiHelpers := True; //!!!! Only if StrToNSStr is used, i.e. a literal const
+      // https://github.com/Embarcadero/octoid/issues/13
+      if LCursor.IsDefinition and (LTypeName.Equals('NSString') or LTypeName.Equals('NSErrorDomain')) then
+        FNeedsMacapiHelpers := True;
       Writer.WriteLn('function %s: %s;', [GetValidIdentifier(LCursor.Spelling), LTypeName]);
     end
     else if TObjCTranslateOption.UnsupportedConstTypeComments in FProject.ObjCTranslateOptions then
