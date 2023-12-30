@@ -1192,6 +1192,7 @@ var
   I, J, MaxSuffix: Integer;
   Info: TMacroInfo;
   HasSuffix, HasFloatToken, IsString: Boolean;
+  LValue: TStringStream;
 begin
   Range := ACursor.Extent;
   if (Range.IsNull) then
@@ -1294,85 +1295,100 @@ begin
     anyway in case future libclang versions do. }
   //!!!!! FCommentWriter.WriteComment(ACursor);
 
-  { First token is macro (constant) name }
-  FWriter.Write(Tokens[0]);
-  FWriter.Write(' = ');
+  LValue := TStringStream.Create;
+  try
 
-  for I := 1 to TokenList.Count - 1 do
-  begin
-    S := Tokens[I];
-    IsString := False;
+    for I := 1 to TokenList.Count - 1 do
+    begin
+      S := Tokens[I];
+      // TODO: Should do other checks, here
+      if S.StartsWith('_Pragma') then
+        Break;
+      IsString := False;
 
-    { Convert commonly used tokens }
-    if (FTokenMap.TryGetValue(S, Conv)) then
-      S := Conv
-    else if (S = '/') then
-    begin
-      { Could be "/" or "div". If we found a token with a period (.) then
-        assume "/", otherwise "div". }
-      if (not HasFloatToken) then
-        S := ' div ';
-    end
-    else if (S.StartsWith('.')) then
-      { Floating-point values in Delphi cannot start with a period }
-      S := '0' + S
-    else if (S.StartsWith('0x', True)) then
-      { Convert hex value }
-      S := '$' + S.Substring(2)
-    else if (S.StartsWith('"') and S.EndsWith('"')) then
-    begin
-      { Convert to single quotes and convert escape sequences }
-      S := ConvertEscapeSequences('''' + S.Substring(1, S.Length - 2) + '''');
-      IsString := True;
-    end
-    else if (S.StartsWith('''') and S.EndsWith('''')) then
-    begin
-      { Convert escape sequences }
-      S := ConvertEscapeSequences(S);
-      IsString := True;
-    end;
+      { Convert commonly used tokens }
+      if (FTokenMap.TryGetValue(S, Conv)) then
+        S := Conv
+      else if (S = '/') then
+      begin
+        { Could be "/" or "div". If we found a token with a period (.) then
+          assume "/", otherwise "div". }
+        if (not HasFloatToken) then
+          S := ' div ';
+      end
+      else if (S.StartsWith('.')) then
+        { Floating-point values in Delphi cannot start with a period }
+        S := '0' + S
+      else if (S.StartsWith('0x', True)) then
+        { Convert hex value }
+        S := '$' + S.Substring(2)
+      else if (S.StartsWith('"') and S.EndsWith('"')) then
+      begin
+        { Convert to single quotes and convert escape sequences }
+        S := ConvertEscapeSequences('''' + S.Substring(1, S.Length - 2) + '''');
+        IsString := True;
+      end
+      else if (S.StartsWith('''') and S.EndsWith('''')) then
+      begin
+        { Convert escape sequences }
+        S := ConvertEscapeSequences(S);
+        IsString := True;
+      end;
 
-    { Check for type suffixes (as in 123LL) and remove those }
-    C := S.Chars[0];
-    if ((C >= '0') and (C <= '9')) or (C = '$') then
-    begin
-      if (C <> '$') and (S.IndexOf('.') > 0) then
-        { 'f' is only a valid suffix for floating-point values }
-        MaxSuffix := LENGTH(SUFFICES) - 1
-      else
-        MaxSuffix := LENGTH(SUFFICES) - 2;
+      { Check for type suffixes (as in 123LL) and remove those }
+      C := S.Chars[0];
+      if ((C >= '0') and (C <= '9')) or (C = '$') then
+      begin
+        if (C <> '$') and (S.IndexOf('.') > 0) then
+          { 'f' is only a valid suffix for floating-point values }
+          MaxSuffix := LENGTH(SUFFICES) - 1
+        else
+          MaxSuffix := LENGTH(SUFFICES) - 2;
 
-      repeat
-        HasSuffix := False;
-        for J := 0 to MaxSuffix do
-        begin
-          if (S.EndsWith(SUFFICES[J], True)) then
+        repeat
+          HasSuffix := False;
+          for J := 0 to MaxSuffix do
           begin
-            HasSuffix := True;
-            SetLength(S, S.Length - SUFFICES[J].Length);
+            if (S.EndsWith(SUFFICES[J], True)) then
+            begin
+              HasSuffix := True;
+              SetLength(S, S.Length - SUFFICES[J].Length);
+            end;
           end;
-        end;
-      until (not HasSuffix);
+        until (not HasSuffix);
+      end;
+
+      if IsString then
+      begin
+        { In macros, strings can be concatenated like this:
+            FOO "str" BAR
+          We need to put '+' inbetween }
+        if (I > 1) and (Tokens[I - 1] <> '+') then
+          // FWriter.Write('+');
+          LValue.WriteString('+');
+
+        // FWriter.Write(S);
+        LValue.WriteString(S);
+
+        if (I < (TokenList.Count - 1)) and (Tokens[I + 1] <> '+') then
+          // FWriter.Write('+');
+          LValue.WriteString('+');
+      end
+      else
+        // FWriter.Write(S);
+        LValue.WriteString(S);
     end;
-
-    if IsString then
+    if LValue.Size > 0 then
     begin
-      { In macros, strings can be concatenated like this:
-          FOO "str" BAR
-        We need to put '+' inbetween }
-      if (I > 1) and (Tokens[I - 1] <> '+') then
-        FWriter.Write('+');
-
-      FWriter.Write(S);
-
-      if (I < (TokenList.Count - 1)) and (Tokens[I + 1] <> '+') then
-        FWriter.Write('+');
-    end
-    else
-      FWriter.Write(S);
+      { First token is macro (constant) name }
+      FWriter.Write(Tokens[0]);
+      FWriter.Write(' = ');
+      FWriter.Write(LValue.DataString);
+      FWriter.WriteLn(';');
+    end;
+  finally
+    LValue.Free;
   end;
-
-  FWriter.WriteLn(';');
 end;
 
 procedure TCustomTranslator.WriteConstants;
