@@ -117,6 +117,7 @@ type
     FMethods: TDelphiMethods;
     FNeedsMacapiHelpers: Boolean;
     FProject: TObjCHeaderProject;
+    procedure CheckTypeMaps(const ACursor: TCursor);
     procedure CheckTypeUnitMap(const ATypeName: string);
     function CreateCombinedHeaderFile: Boolean;
     procedure DiscoverBlockMethods(const ACursor: TCursor; const AClassName: string = '');
@@ -659,6 +660,19 @@ begin
   Result := TObjCTranslateOption.TodoComments in FProject.ObjCTranslateOptions;
 end;
 
+procedure TObjCHeaderTranslator.CheckTypeMaps(const ACursor: TCursor);
+var
+  LSpelling, LTypeName: string;
+begin
+  case ACursor.Kind of
+    TCursorKind.ParmDecl:
+    begin
+      LTypeName := GetDelphiTypeName(ACursor.CursorType, True);
+      CheckTypeUnitMap(LTypeName);
+    end;
+  end;
+end;
+
 procedure TObjCHeaderTranslator.CheckTypeUnitMap(const ATypeName: string);
 var
   LUnitName: string;
@@ -806,7 +820,6 @@ begin
     for I := 0 to AType.ArgTypeCount - 1 do
     begin
       LTypeName := GetDelphiTypeName(AType.ArgTypes[I], True);
-      CheckTypeUnitMap(LTypeName);
       LArgument := Format('param%d: %s', [I + 1, LTypeName]);
       LBuilder.Append(LArgument);
       if I < AType.ArgTypeCount - 1 then
@@ -1713,6 +1726,7 @@ var
   LFileName, LFramework: string;
   LSpelling: string;
 begin
+  CheckTypeMaps(ACursor);
   LFileName := GetCursorFileName(ACursor);
   // Is from the target framework..
   Result := LFileName.StartsWith(FProject.FrameworkDirectory) or LFileName.Contains('usr\include');
