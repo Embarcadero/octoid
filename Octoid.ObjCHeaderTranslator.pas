@@ -871,6 +871,7 @@ var
   LPointeeType: TType;
   LBuilder: TStringBuilder;
   LMethodName, LSpelling: string;
+  LHasArgs: Boolean;
 begin
   LMethodName := ACursor.Spelling;
   IsProceduralType(ACursor.CursorType, LPointeeType);
@@ -882,42 +883,57 @@ begin
     else
       LBuilder.Append('procedure');
     LArgCount := LPointeeType.ArgTypeCount;
-    if LArgCount > 0 then
-      LBuilder.Append('(');
-    LArgIndex := 0;
+    LHasArgs := False;
+    // Pre-check
     ACursor.VisitChildren(
       function(const ACursor, AParent: TCursor): TChildVisitResult
-      var
-        LArgName, LTypeName: string;
-        LIndex: Integer;
       begin
-        LSpelling := ACursor.Spelling;
         if ACursor.Kind = TCursorKind.ParmDecl then
         begin
-          LArgName := GetValidIdentifier(ACursor.Spelling);
-          if LArgName = '' then
-            LArgName := 'param' + (LArgIndex + 1).ToString;
-          LTypeName := 'Unknown';
-          case ACursor.CursorType.Kind of
-            TTypeKind.BlockPointer:
-            begin
-              LIndex := FBlockMethods.AddBlockMethod(AClassName, GetBlockMethodTypeDeclaration(ACursor.ResultType.PointeeType), ACursor.Spelling);
-              if LIndex > -1 then
-                LTypeName := FBlockMethods.Items[LIndex].TypeName;
-            end;
-          else
-            LTypeName := GetDelphiTypeName(ACursor.CursorType, True);
-          end;
-          LBuilder.Append(LArgName + ': ' + LTypeName);
-          Inc(LArgIndex);
-          if LArgIndex < LArgCount then
-            LBuilder.Append('; ');
-        end;
-        Result := TChildVisitResult.Continue;
+          LHasArgs := True;
+          Result := TChildVisitResult.Break;
+        end
+        else
+          Result := TChildVisitResult.Continue;
       end
     );
-    if LArgCount > 0 then
+    if LHasArgs then
+    begin
+      LBuilder.Append('(');
+      LArgIndex := 0;
+      ACursor.VisitChildren(
+        function(const ACursor, AParent: TCursor): TChildVisitResult
+        var
+          LArgName, LTypeName: string;
+          LIndex: Integer;
+        begin
+          LSpelling := ACursor.Spelling;
+          if ACursor.Kind = TCursorKind.ParmDecl then
+          begin
+            LArgName := GetValidIdentifier(ACursor.Spelling);
+            if LArgName = '' then
+              LArgName := 'param' + (LArgIndex + 1).ToString;
+            LTypeName := 'Unknown';
+            case ACursor.CursorType.Kind of
+              TTypeKind.BlockPointer:
+              begin
+                LIndex := FBlockMethods.AddBlockMethod(AClassName, GetBlockMethodTypeDeclaration(ACursor.ResultType.PointeeType), ACursor.Spelling);
+                if LIndex > -1 then
+                  LTypeName := FBlockMethods.Items[LIndex].TypeName;
+              end;
+            else
+              LTypeName := GetDelphiTypeName(ACursor.CursorType, True);
+            end;
+            LBuilder.Append(LArgName + ': ' + LTypeName);
+            Inc(LArgIndex);
+            if LArgIndex < LArgCount then
+              LBuilder.Append('; ');
+          end;
+          Result := TChildVisitResult.Continue;
+        end
+      );
       LBuilder.Append(')');
+    end;
     // Add the result type, if it's a function
     if LHasResult then
     begin
