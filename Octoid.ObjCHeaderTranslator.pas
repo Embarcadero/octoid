@@ -1712,12 +1712,10 @@ begin
   LFileName := GetCursorFileName(ACursor);
   // Is from the target framework..
   Result := LFileName.StartsWith(FProject.FrameworkDirectory) or LFileName.Contains('usr\include');
-  if not Result and ACursor.IsReference and LFileName.StartsWith(FProject.FrameworkRoot) then
+  if (ACursor.Kind = TCursorKind.InclusionDirective) and LFileName.StartsWith(FProject.FrameworkDirectory) then
   begin
-    LFramework := LFileName.Substring(Length(FProject.FrameworkRoot));
-    LFramework := LFramework.Substring(0, Pos('\', LFramework) - 1);
-    LFramework := LFramework.Substring(0, Pos('.', LFramework) - 1);
-    if FIncludedFrameworks.IndexOf(LFramework) = -1 then
+    LFramework := ACursor.Spelling.Substring(0, Pos('/', ACursor.Spelling) - 1);
+    if not LFramework.IsEmpty and not SameText(LFramework, FProject.FrameworkName) and (FIncludedFrameworks.IndexOf(LFramework) = -1) then
       FIncludedFrameworks.Add(LFramework);
   end;
 end;
