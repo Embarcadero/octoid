@@ -175,7 +175,7 @@ type
 implementation
 
 uses
-  System.IOUtils, System.StrUtils,
+  System.IOUtils, System.StrUtils, System.Character,
   Neslib.Clang.Api,
   Octoid.Consts;
 
@@ -1711,14 +1711,17 @@ end;
 function TObjCHeaderTranslator.CanIncludeCursor(const ACursor: TCursor): Boolean;
 var
   LFileName, LFramework: string;
+  LSpelling: string;
 begin
   LFileName := GetCursorFileName(ACursor);
   // Is from the target framework..
   Result := LFileName.StartsWith(FProject.FrameworkDirectory) or LFileName.Contains('usr\include');
   if (ACursor.Kind = TCursorKind.InclusionDirective) and LFileName.StartsWith(FProject.FrameworkDirectory) then
   begin
-    LFramework := ACursor.Spelling.Substring(0, Pos('/', ACursor.Spelling) - 1);
-    if not LFramework.IsEmpty and not SameText(LFramework, FProject.FrameworkName) and (FIncludedFrameworks.IndexOf(LFramework) = -1) then
+    LSpelling := ACursor.Spelling;
+    LFramework := LSpelling.Substring(0, Pos('/', LSpelling) - 1);
+    if not LFramework.IsEmpty and LFramework.Chars[0].IsUpper and not SameText(LFramework, FProject.FrameworkName)
+      and (FIncludedFrameworks.IndexOf(LFramework) = -1) then
       FIncludedFrameworks.Add(LFramework);
   end;
 end;
