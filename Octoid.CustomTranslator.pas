@@ -1288,7 +1288,7 @@ begin
     Tokens[I] := S;
   end;
 
-  if (FSymbolsToIgnore.ContainsKey(Tokens[0])) then
+  if (FSymbolsToIgnore.ContainsKey(Tokens[0].ToLower)) then
     Exit;
 
   { Seems that libclang does not provide comments for #defines. Call WriteComment
@@ -1757,7 +1757,7 @@ begin
   for Cursor in FDeclaredTypes do
   begin
     S := Cursor.Spelling;
-    if (S <> '') and (not FSymbolsToIgnore.ContainsKey(S)) then
+    if (S <> '') and (not FSymbolsToIgnore.ContainsKey(S.ToLower)) then
     begin
       // CheckFirst;
       First := False;
@@ -1786,7 +1786,7 @@ begin
               S := RemoveQualifiers(S);
           end;
 
-          if (S <> '') and (not FSymbolsToIgnore.ContainsKey(S)) then
+          if (S <> '') and (not FSymbolsToIgnore.ContainsKey(S.ToLower)) then
           begin
             // CheckFirst;
             First := False;
@@ -2181,7 +2181,7 @@ end;
 
 procedure TCustomTranslator.WriteType(const ACursor: TCursor);
 begin
-  if not FSymbolsToIgnore.ContainsKey(ACursor.Spelling) then
+  if not FSymbolsToIgnore.ContainsKey(ACursor.Spelling.ToLower) then
   begin
     case ACursor.Kind of
       TCursorKind.StructDecl:
@@ -2198,6 +2198,8 @@ begin
     else
       HandleWriteType(ACursor);
     end;
+    // https://github.com/Embarcadero/octoid/issues/14
+    FSymbolsToIgnore.Add(ACursor.Spelling.ToLower, 0);
   end;
 end;
 
