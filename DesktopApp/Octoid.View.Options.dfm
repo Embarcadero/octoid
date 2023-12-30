@@ -89,7 +89,7 @@ object OptionsView: TOptionsView
         AlignWithMargins = True
         Left = 11
         Top = 81
-        Width = 84
+        Width = 920
         Height = 21
         Margins.Left = 11
         Margins.Top = 5
@@ -97,12 +97,13 @@ object OptionsView: TOptionsView
         Margins.Bottom = 5
         Align = alTop
         Caption = 'Error Limit:'
+        ExplicitWidth = 84
       end
       object AdditionalOptionsLabel: TLabel
         AlignWithMargins = True
         Left = 11
         Top = 5
-        Width = 142
+        Width = 920
         Height = 21
         Margins.Left = 11
         Margins.Top = 5
@@ -110,6 +111,7 @@ object OptionsView: TOptionsView
         Margins.Bottom = 5
         Align = alTop
         Caption = 'Additional Options:'
+        ExplicitWidth = 142
       end
       object ErrorLimitEditPanel: TPanel
         Left = 0
@@ -128,7 +130,7 @@ object OptionsView: TOptionsView
           Left = 178
           Top = 5
           Width = 5
-          Height = 21
+          Height = 35
           Margins.Left = 12
           Margins.Top = 5
           Margins.Right = 5
@@ -141,6 +143,7 @@ object OptionsView: TOptionsView
           Font.Style = [fsBold]
           ParentFont = False
           Layout = tlCenter
+          ExplicitHeight = 21
         end
         object ErrorLimitEdit: TEdit
           AlignWithMargins = True
@@ -148,12 +151,15 @@ object OptionsView: TOptionsView
           Top = 5
           Width = 150
           Height = 35
+          Hint = 'Number of errors that the transform encounters before it aborts'
           Margins.Left = 11
           Margins.Top = 5
           Margins.Right = 5
           Margins.Bottom = 5
           Align = alLeft
           NumbersOnly = True
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
           ExplicitHeight = 29
         end
@@ -176,11 +182,14 @@ object OptionsView: TOptionsView
           Top = 5
           Width = 920
           Height = 35
+          Hint = 'Options that can be passed to Clang'
           Margins.Left = 11
           Margins.Top = 5
           Margins.Right = 5
           Margins.Bottom = 5
           Align = alClient
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
           ExplicitHeight = 29
         end
@@ -191,12 +200,17 @@ object OptionsView: TOptionsView
         Top = 201
         Width = 920
         Height = 26
+        Hint = 
+          'Generates a todo comment for some unhandled scenarios - this is ' +
+          'intended mostly for Octoid developers'
         Margins.Left = 11
         Margins.Top = 9
         Margins.Right = 5
         Margins.Bottom = 5
         Align = alTop
         Caption = 'Include TODO comments'
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 2
       end
       object ConstTypeCommentsCheckBox: TCheckBox
@@ -205,12 +219,15 @@ object OptionsView: TOptionsView
         Top = 161
         Width = 920
         Height = 26
+        Hint = 'Generates a comment where a constant cannot be translated'
         Margins.Left = 11
         Margins.Top = 9
         Margins.Right = 5
         Margins.Bottom = 5
         Align = alTop
         Caption = 'Include unsupported const type comments'
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 3
       end
       object DeprecationCommentsPanel: TPanel
@@ -231,7 +248,10 @@ object OptionsView: TOptionsView
           Top = 9
           Width = 920
           Height = 26
-          Hint = 'Includes a comment with the method, regarding deprecation'
+          Hint = 
+            'Includes a comment with the method, regarding deprecation, i.e t' +
+            'he method has become deprecated in a certain version of iOS or m' +
+            'acOS'
           Margins.Left = 11
           Margins.Top = 9
           Margins.Right = 5
@@ -250,14 +270,16 @@ object OptionsView: TOptionsView
           Width = 901
           Height = 26
           Hint = 
-            'Otherwise the comment appears on the same line as the method, af' +
-            'ter the declaration'
+            'Inserts the comment before the method name, otherwise follows th' +
+            'e method declaration on the same line'
           Margins.Left = 30
           Margins.Top = 9
           Margins.Right = 5
           Margins.Bottom = 5
           Align = alTop
           Caption = 'Before the method (and any method attributes)'
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 1
         end
       end
@@ -336,10 +358,12 @@ object OptionsView: TOptionsView
         Margins.Bottom = 5
         Align = alTop
         Images = ButtonsImageList
+        ParentShowHint = False
         RightButton.HotImageIndex = 0
         RightButton.ImageIndex = 0
         RightButton.PressedImageIndex = 0
         RightButton.Visible = True
+        ShowHint = True
         TabOrder = 1
         OnRightButtonClick = TypeUnitMapFileNameEditRightButtonClick
       end
@@ -355,7 +379,7 @@ object OptionsView: TOptionsView
         AlignWithMargins = True
         Left = 11
         Top = 5
-        Width = 96
+        Width = 920
         Height = 21
         Margins.Left = 11
         Margins.Top = 5
@@ -363,6 +387,7 @@ object OptionsView: TOptionsView
         Margins.Bottom = 5
         Align = alTop
         Caption = 'Banner Text:'
+        ExplicitWidth = 96
       end
       object UnitBannerGroupBox: TGroupBox
         Left = 0
@@ -396,6 +421,7 @@ object OptionsView: TOptionsView
           Top = 28
           Width = 912
           Height = 26
+          Hint = 'Before the "unit" keyword at the start of the unit'
           Margins.Left = 5
           Margins.Top = 5
           Margins.Right = 5
@@ -403,6 +429,8 @@ object OptionsView: TOptionsView
           Align = alTop
           Caption = 'Before unit declaration'
           Checked = True
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
           TabStop = True
         end
@@ -412,12 +440,17 @@ object OptionsView: TOptionsView
           Top = 64
           Width = 912
           Height = 25
+          Hint = 
+            'After the "unit" keyword at the start of the unit, but before th' +
+            'e "interface" keyword'
           Margins.Left = 5
           Margins.Top = 5
           Margins.Right = 5
           Margins.Bottom = 5
           Align = alTop
           Caption = 'Before interface declaration'
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 1
         end
       end
@@ -427,6 +460,7 @@ object OptionsView: TOptionsView
         Top = 36
         Width = 926
         Height = 288
+        Hint = 'Text inserted at the beginning of the unit'
         Margins.Left = 5
         Margins.Top = 5
         Margins.Right = 5
@@ -438,6 +472,8 @@ object OptionsView: TOptionsView
         Font.Name = 'Consolas'
         Font.Style = []
         ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 2
       end
       object UseBannerAsIsCheckBox: TCheckBox
@@ -446,12 +482,17 @@ object OptionsView: TOptionsView
         Top = 334
         Width = 926
         Height = 25
+        Hint = 
+          'Decoration means adding comment specifiers so that the banner is' +
+          ' compiler friendly'
         Margins.Left = 5
         Margins.Top = 5
         Margins.Right = 5
         Margins.Bottom = 5
         Align = alBottom
         Caption = 'Insert the banner exactly as is (it is otherwise "decorated")'
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 3
       end
     end
@@ -482,12 +523,15 @@ object OptionsView: TOptionsView
         Top = 36
         Width = 914
         Height = 29
+        Hint = 'VCL style theme that changes the look of the UI'
         Margins.Left = 11
         Margins.Top = 5
         Margins.Right = 11
         Margins.Bottom = 5
         Align = alTop
         Style = csDropDownList
+        ParentShowHint = False
+        ShowHint = True
         Sorted = True
         TabOrder = 0
         OnCloseUp = ThemeComboBoxCloseUp
