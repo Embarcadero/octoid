@@ -2181,7 +2181,7 @@ end;
 
 procedure TCustomTranslator.WriteTypedefType(const ACursor: TCursor);
 var
-  SrcName, DstName: string;
+  SrcName, DstName, LValidIdent: string;
   T, Pointee, CanonType: TType;
   LEnumConstCursor: TCursor;
 begin
@@ -2279,10 +2279,13 @@ begin
         ..
       } Foo;
   *)
-  if (DstName = SrcName) then
+  if DstName = SrcName then
     Exit;
 
-  FWriter.WriteLn('%s = %s;', [GetValidIdentifier(DstName), SrcName]);
+  // https://github.com/Embarcadero/octoid/issues/21
+  LValidIdent := GetValidIdentifier(DstName);
+  if not SameText(LValidIdent, SrcName) then
+    FWriter.WriteLn('%s = %s;', [LValidIdent, SrcName]);
   WriteIndirections(DstName, SrcName);
 end;
 
