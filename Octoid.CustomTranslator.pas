@@ -158,8 +158,8 @@ type
     procedure WriteIndirections(ATypeName: string; const ADelphiTypeName: string = '');
     procedure WriteProceduralType(const ACursor: TCursor; const AType: TType; const ANamePrefix: string = '');
     procedure WriteStructType(const ACursor: TCursor; const AIsUnion: Boolean);
-    procedure WriteStructTypeField(const ACursor: TCursor; const AIndex: Integer);
-    procedure WriteStructTypeFieldElaborate(const ACursor: TCursor; const AIndex: Integer);
+    function WriteStructTypeField(const ACursor: TCursor; const AIndex: Integer; const ACommented: Boolean = False): Boolean;
+    function WriteStructTypeFieldElaborate(const ACursor: TCursor; const AIndex: Integer): Boolean;
     procedure WriteStructTypeFieldStruct(const ACursor: TCursor);
     procedure WriteStructTypeUnion(const ACursor: TCursor);
     procedure WriteToDo(const AText: string);
@@ -2037,13 +2037,17 @@ begin
   end;
 end;
 
-procedure TCustomTranslator.WriteStructTypeFieldElaborate(const ACursor: TCursor; const AIndex: Integer);
+function TCustomTranslator.WriteStructTypeFieldElaborate(const ACursor: TCursor; const AIndex: Integer): Boolean;
 var
   LUnionCursor: TCursor;
 begin
   // Elaborate will be different if first child type is a union
+  Result := False;
   if FindFieldUnion(ACursor, LUnionCursor) then
-    WriteStructTypeUnion(LUnionCursor)
+  begin
+    WriteStructTypeUnion(LUnionCursor);
+    Result := True;
+  end
   else
     WriteStructTypeFieldStruct(ACursor);
 end;
@@ -2051,14 +2055,26 @@ end;
 procedure TCustomTranslator.WriteStructTypeFieldStruct(const ACursor: TCursor);
 var
   LIndex: Integer;
+  LNeedsMembersOmitted, LNeedsOmitText: Boolean;
 begin
   LIndex := 0;
+  LNeedsMembersOmitted := False;
+  LNeedsOmitText := False;
   ACursor.CursorType.VisitFields(
     function(const ACursor: TCursor): TVisitorResult
     begin
-      if LIndex > 0 then
+      if (LIndex > 0) and (not LNeedsMembersOmitted or not LNeedsOmitText) then
         FWriter.WriteLn(';');
-      WriteStructTypeField(ACursor, LIndex);
+      if LNeedsMembersOmitted and LNeedsOmitText then
+      begin
+        FWriter.WriteLn('// *** Members omitted due to being beyond the variant part: ***');
+        LNeedsOmitText := False;
+      end;
+      if WriteStructTypeField(ACursor, LIndex, LNeedsMembersOmitted) then
+      begin
+        LNeedsMembersOmitted := True;
+        LNeedsOmitText := True;
+      end;
       Inc(LIndex);
       Result := TVisitorResult.Continue;
     end
@@ -2068,7 +2084,7 @@ begin
     FWriter.Write(';');
 end;
 
-procedure TCustomTranslator.WriteStructTypeField(const ACursor: TCursor; const AIndex: Integer);
+function TCustomTranslator.WriteStructTypeField(const ACursor: TCursor; const AIndex: Integer; const ACommented: Boolean = False): Boolean;
 var
   LPointeeType: TType;
   LFieldName: string;
@@ -2077,6 +2093,7 @@ var
   LCursorKind: TCursorKind;
   LIsElaborate: Boolean;
 begin
+  Result := False;
   LCursorKind := ACursor.Kind;
   LTypeKind := ACursor.CursorType.Kind;
   LSpelling := ACursor.Spelling;
@@ -2086,13 +2103,19 @@ begin
   LIsElaborate := LTypeKind in [TTypeKind.Rec, TTypeKind.Elaborated];
   if not LIsElaborate then
   begin
-    FWriter.Write(LFieldName);
+    if ACommented then
+      FWriter.Write('// ' + LFieldName)
+    else
+      FWriter.Write(LFieldName);
     FWriter.Write(': ');
   end;
   if LIsElaborate then
-    WriteStructTypeFieldElaborate(ACursor, AIndex)
+    Result := WriteStructTypeFieldElaborate(ACursor, AIndex)
   else if LCursorKind = TCursorKind.UnionDecl then
-    WriteStructTypeUnion(ACursor)
+  begin
+    WriteStructTypeUnion(ACursor);
+    Result := True;
+  end
   else if (IsProceduralType(ACursor.CursorType, LPointeeType)) then
     WriteFunctionProto(ACursor, LPointeeType, '', True)
   else
