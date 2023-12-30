@@ -1187,12 +1187,12 @@ var
   Range: TSourceRange;
   TokenList: ITokenList;
   Tokens: TArray<string>;
-  S, Conv: string;
+  S, Conv, LValue: string;
   C: Char;
   I, J, MaxSuffix: Integer;
   Info: TMacroInfo;
-  HasSuffix, HasFloatToken, IsString: Boolean;
-  LValue: TStringStream;
+  HasSuffix, HasFloatToken, IsString, IsNumeric: Boolean;
+  LValueStream: TStringStream;
 begin
   Range := ACursor.Extent;
   if (Range.IsNull) then
@@ -1295,7 +1295,7 @@ begin
     anyway in case future libclang versions do. }
   //!!!!! FCommentWriter.WriteComment(ACursor);
 
-  LValue := TStringStream.Create;
+  LValueStream := TStringStream.Create;
   try
 
     for I := 1 to TokenList.Count - 1 do
@@ -1335,10 +1335,12 @@ begin
         IsString := True;
       end;
 
+      IsNumeric := False;
       { Check for type suffixes (as in 123LL) and remove those }
       C := S.Chars[0];
       if ((C >= '0') and (C <= '9')) or (C = '$') then
       begin
+        IsNumeric := True;
         if (C <> '$') and (S.IndexOf('.') > 0) then
           { 'f' is only a valid suffix for floating-point values }
           MaxSuffix := LENGTH(SUFFICES) - 1
@@ -1365,29 +1367,33 @@ begin
           We need to put '+' inbetween }
         if (I > 1) and (Tokens[I - 1] <> '+') then
           // FWriter.Write('+');
-          LValue.WriteString('+');
+          LValueStream.WriteString('+');
 
         // FWriter.Write(S);
-        LValue.WriteString(S);
+        LValueStream.WriteString(S);
 
         if (I < (TokenList.Count - 1)) and (Tokens[I + 1] <> '+') then
           // FWriter.Write('+');
-          LValue.WriteString('+');
+          LValueStream.WriteString('+');
       end
       else
         // FWriter.Write(S);
-        LValue.WriteString(S);
+        LValueStream.WriteString(S);
     end;
-    if LValue.Size > 0 then
+    if LValueStream.Size > 0 then
     begin
+      LValue := LValueStream.DataString;
+      // Remove typecasting of numeric value
+      if IsNumeric and (LValue.Chars[0] = '(') then
+        LValue := LValue.Substring(LValue.IndexOf(')') + 1);
       { First token is macro (constant) name }
       FWriter.Write(Tokens[0]);
       FWriter.Write(' = ');
-      FWriter.Write(LValue.DataString);
+      FWriter.Write(LValue);
       FWriter.WriteLn(';');
     end;
   finally
-    LValue.Free;
+    LValueStream.Free;
   end;
 end;
 
