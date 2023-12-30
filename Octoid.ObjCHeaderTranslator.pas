@@ -157,6 +157,7 @@ type
     procedure HandleWriteType(const ACursor: TCursor); override;
     function IsAnonymous(const AName: string): Boolean; override;
     function IsConstIdentifier(const AName: string): Boolean; override;
+    procedure ProcessErrors(const AErrors: TArray<string>);
     function Translate: ITranslationUnit; override;
     function RemoveQualifiers(const ATypeName: string): string; override;
     procedure SetupTokenMap; override;
@@ -1762,7 +1763,7 @@ var
   Diag: IDiagnostic;
   I, ErrorCount: Integer;
   LMsg, LPath: string;
-  LMissing: TArray<string>;
+  LMissing, LParts, LErrors: TArray<string>;
 begin
   if not CreateCombinedHeaderFile then
     Exit(nil); // <======
@@ -1801,10 +1802,71 @@ begin
   if Length(LMissing) > 0 then
   begin
     Result := nil;
-    DoMessage('FATAL errors:');
+    DoMessage(#13#10'FATAL errors:');
     for LMsg in LMissing do
+    begin
       DoMessage(LMsg);
+      LParts := LMsg.Split(['error: ']);
+      if Length(LParts) > 1 then
+        LErrors := LErrors + [LParts[1]];
+    end;
+    if Length(LErrors) > 0 then
+      ProcessErrors(LErrors);
   end;
+end;
+
+procedure TObjCHeaderTranslator.ProcessErrors(const AErrors: TArray<string>);
+var
+  LError, LFileName, LFilePath, LFolderPath, LFrameworkName, LHeaderName: string;
+  LParts, LFrameworks, LFolders: TArray<string>;
+begin
+  DoMessage('');
+  for LError in AErrors do
+  begin
+    if LError.EndsWith('file not found') then
+    begin
+      LParts := LError.Split(['''']);
+      if Length(LParts) > 1 then
+      begin
+        // e.g. ModelIO/ModelIO.h
+        // e.g. cups/ppd.h
+        LFilePath := LParts[1];
+        LParts := LFilePath.Split(['/']);
+        if Length(LParts) > 1 then
+        begin
+          LFileName := LParts[Length(LParts) - 1];
+          // e.g. ModelIO.h will become ModelIO
+          LHeaderName := TPath.GetFileNameWithoutExtension(LFileName);
+          // If the missing header ends with the same text as the parent folder, it's likely to be a missing framework
+          LFrameworkName := LParts[Length(LParts) - 2];
+          if LHeaderName.EndsWith(LFrameworkName, True) then
+          begin
+            if IndexStr(LFrameworkName, LFrameworks) = -1 then
+              LFrameworks := LFrameworks + [LFrameworkName];
+          end
+          else
+          begin
+            Delete(LParts, Length(LParts) - 1, 1);
+            LFolderPath := string.Join('/', LParts);
+            if IndexStr(LFolderPath, LFolders) = -1 then
+              LFolders := LFolders + [LFolderPath];
+          end;
+        end;
+      end;
+    end;
+  end;
+  if Length(LFrameworks) > 0 then
+  begin
+    DoMessage('The following appear to be frameworks not imported into the SDK, or are dependent frameworks that are missing:');
+    DoMessage(string.Join(', ', LFrameworks));
+  end;
+  if Length(LFolders) > 0 then
+  begin
+    DoMessage('The following appear to be folders missing from below \usr\include in the SDK:');
+    DoMessage(string.Join(#13#10, LFolders));
+  end;
+  if (Length(LFrameworks) > 0) or (Length(LFolders) > 0) then
+    DoMessage('');
 end;
 
 end.
