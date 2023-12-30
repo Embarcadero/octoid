@@ -1633,6 +1633,8 @@ begin
     Writer.Write('Macapi.ObjectiveC')
   else
     Writer.Write('Macapi.ObjectiveC, Macapi.CoreFoundation');
+  if not SourceUnitName.EndsWith('.Foundation') and (FInterfaceUnits.IndexOf(LNamespace + '.Foundation') = -1) and (FIncludedFrameworks.IndexOf('Foundation') = -1) then
+    Writer.Write(', %s.Foundation', [LNamespace]);
   for I := 0 to FInterfaceUnits.Count - 1 do
   begin
     Writer.Write(', ');
