@@ -662,7 +662,7 @@ end;
 
 procedure TObjCHeaderTranslator.CheckTypeMaps(const ACursor: TCursor);
 var
-  LSpelling, LTypeName: string;
+  LTypeName: string;
 begin
   case ACursor.Kind of
     TCursorKind.ParmDecl:
@@ -1871,9 +1871,9 @@ begin
           LFileName := LParts[Length(LParts) - 1];
           // e.g. ModelIO.h will become ModelIO
           LHeaderName := TPath.GetFileNameWithoutExtension(LFileName);
-          // If the missing header ends with the same text as the parent folder, it's likely to be a missing framework
+          // If the missing header has a capital for the first letter, it's likely to be a missing framework
           LFrameworkName := LParts[Length(LParts) - 2];
-          if LHeaderName.EndsWith(LFrameworkName, True) then
+          if LFrameworkName.Chars[0].IsUpper then
           begin
             if IndexStr(LFrameworkName, LFrameworks) = -1 then
               LFrameworks := LFrameworks + [LFrameworkName];
