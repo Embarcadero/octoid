@@ -19,10 +19,12 @@ type
   TDelphiMethod = record
     DeclarationFormat: string;
     Deprecation: string;
+    Index: Integer;
     IsAvailable: Boolean;
     IsMismatched: Boolean;
     IsOverload: Boolean;
     MethodName: string; // Delphi
+    MethodNamePartsCount: Integer;
     ObjCMethodName: string; // Fully qualified
     ObjCMethodNameParts: TArray<string>;
     ParamTypeNames: TParamTypeNames; // Type names of parameters of the method
@@ -38,9 +40,9 @@ type
   private
     class var FComparer: IComparer<TDelphiMethod>;
   public
-    function AddMethod(const AMethod: TDelphiMethod): Integer;
+    function AddMethod(AMethod: TDelphiMethod): Integer;
     function MethodExists(const AIndex: Integer): Boolean;
-    procedure ResolveCollisions(const AMethodName: string);
+    function ResolveCollisions(const AMethod: TDelphiMethod): Boolean;
     procedure ResolveMethods;
     procedure ResolveOverloads(const AIndex: Integer);
   end;
@@ -286,15 +288,20 @@ end;
 
 function TDelphiMethod.Equals(const AMethod: TDelphiMethod): Boolean;
 begin
-  Result := AMethod.MethodName.Equals(MethodName) and AMethod.ParamTypeNames.Equals(ParamTypeNames);
+  Result := (Index <> AMethod.Index) and AMethod.MethodName.Equals(MethodName) and AMethod.ParamTypeNames.Equals(ParamTypeNames);
 end;
 
 procedure TDelphiMethod.ExpandMethodName;
-//var
-//  LNameParts: TArray<string>;
+var
+  I: Integer;
 begin
-  if (Length(ObjCMethodNameParts) > 1) and not ObjCMethodNameParts[1].IsEmpty then
-    MethodName := ObjCMethodNameParts[0] + UpCase(ObjCMethodNameParts[1].Chars[0]) + ObjCMethodNameParts[1].Substring(1);
+  if (Length(ObjCMethodNameParts) > 1) and (MethodNamePartsCount < Length(ObjCMethodNameParts) - 1) then
+  begin
+    Inc(MethodNamePartsCount);
+    MethodName := ObjCMethodNameParts[0];
+    for I := 1 to MethodNamePartsCount do
+      MethodName := MethodName + UpCase(ObjCMethodNameParts[I].Chars[0]) + ObjCMethodNameParts[I].Substring(1);
+  end;
 end;
 
 procedure TDelphiMethod.ExpandObjCMethodName;
@@ -327,11 +334,12 @@ end;
 
 { TDelphiMethods }
 
-function TDelphiMethods.AddMethod(const AMethod: TDelphiMethod): Integer;
+function TDelphiMethods.AddMethod(AMethod: TDelphiMethod): Integer;
 begin
   if AMethod.IsAvailable then
   begin
     AMethod.ExpandObjCMethodName;
+    AMethod.Index := Count;
     Result := Add(AMethod);
   end
   else
@@ -353,13 +361,20 @@ end;
 procedure TDelphiMethods.ResolveMethods;
 var
   I: Integer;
+  LHasCollisions: Boolean;
 begin
   // Resolve collisions
-  for I := 0 to Count - 1 do
-  begin
-    if MethodExists(I) then
-      ResolveCollisions(Items[I].MethodName);
-  end;
+  repeat
+    LHasCollisions := False;
+    for I := 0 to Count - 1 do
+    begin
+      if MethodExists(I) then
+      begin
+        if ResolveCollisions(Items[I]) then
+          LHasCollisions := True;
+      end;
+    end;
+  until not LHasCollisions;
   // Resolve overloads
   for I := 0 to Count - 1 do
     ResolveOverloads(I);
@@ -368,17 +383,19 @@ begin
   Sort(FComparer);
 end;
 
-procedure TDelphiMethods.ResolveCollisions(const AMethodName: string);
+function TDelphiMethods.ResolveCollisions(const AMethod: TDelphiMethod): Boolean;
 var
   I: Integer;
   LMethod: TDelphiMethod;
 begin
+  Result := False;
   for I := 0 to Count - 1 do
   begin
     LMethod := Items[I];
-    if LMethod.MethodName.Equals(AMethodName) then
+    if LMethod.Equals(AMethod) then
     begin
       LMethod.ExpandMethodName;
+      Result := True;
       Items[I] := LMethod;
     end;
   end;
