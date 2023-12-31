@@ -109,55 +109,79 @@ If a conversion fails to produce a translation using the desktop app, the output
 Commonly, this will be due to missing header files, e.g. you may see an output like:
 
 ```
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\usr\include\libkern/_OSByteOrder.h:76:10: error: 'libkern/i386/_OSByteOrder.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\usr\include\stdio.h:407:10: error: 'secure/_stdio.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\usr\include\strings.h:97:10: error: 'secure/_strings.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\usr\include\string.h:194:10: error: 'secure/_string.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\usr\include\libkern/OSByteOrder.h:53:10: error: 'libkern/i386/OSByteOrder.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/Foundation.framework/Headers/NSObjCRuntime.h:9:10: error: 'objc/NSObjCRuntime.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/Foundation.framework/Headers/NSObject.h:6:9: error: 'objc/NSObject.h' file not found
+FATAL errors:
+C:\Users\dave\Documents\Embarcadero\Studio\SDKs\MacOSX14.2.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVDisplayLink.h:26:10: error: 'OpenGL/OpenGL.h' file not found
+C:\Users\dave\Documents\Embarcadero\Studio\SDKs\MacOSX14.2.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVOpenGLBuffer.h:20:10: error: 'OpenGL/OpenGL.h' file not found
+C:\Users\dave\Documents\Embarcadero\Studio\SDKs\MacOSX14.2.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVOpenGLBuffer.h:21:10: error: 'OpenGL/gltypes.h' file not found
+C:\Users\dave\Documents\Embarcadero\Studio\SDKs\MacOSX14.2.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVOpenGLTexture.h:22:10: error: 'OpenGL/OpenGL.h' file not found
+C:\Users\dave\Documents\Embarcadero\Studio\SDKs\MacOSX14.2.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVOpenGLTexture.h:23:10: error: 'OpenGL/gltypes.h' file not found
+C:\Users\dave\Documents\Embarcadero\Studio\SDKs\MacOSX14.2.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVOpenGLTextureCache.h:16:10: error: 'OpenGL/OpenGL.h' file not found
+C:\Users\dave\Documents\Embarcadero\Studio\SDKs\MacOSX14.2.sdk\System\Library\Frameworks/AppKit.framework/Headers/NSImageView.h:12:9: error: 'Symbols/NSSymbolEffect.h' file not found
+C:\Users\dave\Documents\Embarcadero\Studio\SDKs\MacOSX14.2.sdk\System\Library\Frameworks/AppKit.framework/Headers/NSOpenGL.h:10:9: error: 'OpenGL/CGLTypes.h' file not found
+C:\Users\dave\Documents\Embarcadero\Studio\SDKs\MacOSX14.2.sdk\System\Library\Frameworks/AppKit.framework/Headers/NSOpenGL.h:11:9: error: 'OpenGL/gltypes.h' file not found
+
+The following appear to be frameworks not imported into the SDK, or are dependent frameworks that are missing:
+OpenGL, Symbols
 ```
 
-As per the error messages, e.g. `error: 'libkern/i386/_OSByteOrder.h' file not found`, it is expecting a file to be present that has not been imported. For this particular error, one or more files are missing from `\usr\include\libkern\i386`.
+Octoid makes "intelligent guesses" about the errors, and in this case has identified frameworks that appear to have not been imported into the target SDK (in this case macOS 14.2)
 
-To resolve this particular kind of issue, you will need to add the required folders/files to the SDK configuration. In Delphi: 
-
-1. Use Tools|Options, Deployment > SDK Manager to bring up the SDK Manager
-2. Select the SDK that is being targeted by Octoid
-3. Select a path in the Include paths section
-4. Click the Add button in the top right
-5. Enter the path on remote machine - in this instance `$(SDKROOT)/usr/include/libkern`
-6. Enter a file mask of: `*`
-7. Ensure that the `Include path` radio button is selected
-8. In this particular case, to make sure that subfolders are also imported, the `Include subdirectories` checkbox is checked
-9. Click OK
-10. Repeat steps 4-7 (and 8 if necessary) for any other folders that are missing, as per the errors
-11. Click `Update Local File Cache`
-12. Click Save
-
-(For macOS, you will likely need to also add: `/usr/include/secure`, `/usr/include/objc`, `/usr/include/c++`, and `/usr/include/libDER`)
-
-Attempt to translate the desired framework again. You may note a new set of errors, so repeat the above process until the framework translates successfully.
-
-Other errors may include missing frameworks, e.g.:
-
-```
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVDisplayLink.h:26:10: error: 'OpenGL/OpenGL.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVOpenGLBuffer.h:20:10: error: 'OpenGL/OpenGL.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVOpenGLBuffer.h:21:10: error: 'OpenGL/gltypes.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVOpenGLTexture.h:22:10: error: 'OpenGL/OpenGL.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVOpenGLTexture.h:23:10: error: 'OpenGL/gltypes.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/CoreVideo.framework/Headers/CVOpenGLTextureCache.h:16:10: error: 'OpenGL/OpenGL.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/AppKit.framework/Headers/NSOpenGL.h:10:9: error: 'OpenGL/CGLTypes.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/AppKit.framework/Headers/NSOpenGL.h:11:9: error: 'OpenGL/gltypes.h' file not found
-\\Mac\Home\Documents\Embarcadero\Studio\SDKs\MacOSX11.1.sdk\System\Library\Frameworks/QuartzCore.framework/Headers/CAOpenGLLayer.h:8:9: error: 'OpenGL/OpenGL.h' file not found
-```
-
-The process for resolving missing frameworks is similar to that of above, except applies to the Frameworks section in the SDK configuration. The example above indicates that the `OpenGL` framework is missing and will need to be imported
+[This link contains some instructions](https://github.com/DelphiWorlds/HowTo/tree/main/Solutions/AddSDKFrameworks) about how to add missing frameworks.
 
 <p align="center"><img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
 <img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
 <img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
 </p> 
 
+## Fixing issues with a translation
 
+Octoid is yet to produce "perfect" translations 100% of the time. The following are tips for resolving issues you might encounter.
+
+### References missing from existing imports
+
+As at Jan 1st, 2024, there are some existing imports that are yet to be updated, so even though Octoid may include the relevant unit in the interface uses clause, there may be references that are missing from that unit, e.g.:
+
+`NSErrorDomain`:
+
+This type is expected to be in the `Foundation` import for the respective OS e.g. `iOSapi.Foundation`. 
+
+`NSErrorDomain` is just a synonym for `NSString`, so one way to fix this is to simply insert a declaration for it **in the unit that Octoid created for you**, i.e. put this in the type declarations:
+
+```delphi
+  NSErrorDomain = NSString;
+```
+
+Other missing references may not be as straightforward, e.g. if you use Octoid to import the `WebKit` framework for iOS, the compiler will report an error here:
+
+```delphi
+    function findInteraction: UIFindInteraction; cdecl;
+```
+
+`UIFindInteraction` is part of the `UIKit` framework, however it is yet to be included in `iOSapi.UIKit.pas`. You could solve this by:
+
+Doing an import of `UIKit`, and extracting the declarations for `UIFindInteraction` and any other types it depends on, 
+
+**OR** 
+
+If the `findInteraction` method is not required by your code, you could just comment out the line, perhaps adding a comment indicating why the function was commented out. 
+
+### Unit not included in the interface uses clause
+
+If you use Octoid to import the `CoreHaptics` framework for iOS, you will notice an error in the declaration for `CHHapticEngine`:
+
+```delphi
+    function initWithAudioSession(audioSession: AVAudioSession; error: PPointer): Pointer; cdecl;
+```
+
+The compiler reports:
+
+```
+[DCC Error] iOSapi.CoreHaptics.pas(219): E2003 Undeclared identifier: 'AVAudioSession'
+```
+
+The `AVAudioSession` type is declared in the unit `iOSapi.AVFoundation`, so it is a simple matter of adding it to the interface uses clause of the unit that Octoid created, i.e. `iOSapi.CoreHaptics`
+
+<p align="center"><img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+<img src="logo/OctoidLogo40x40.png" alt=" " height="40" width="40" />
+</p> 
