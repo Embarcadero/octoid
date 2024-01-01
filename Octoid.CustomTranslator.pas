@@ -1074,8 +1074,9 @@ end;
 
 
 function TCustomTranslator.VisitTypes(const ACursor, AParent: TCursor): TChildVisitResult;
-//var
-//  LSpelling: string;
+var
+  LIsTypeDefEnum: Boolean;
+  // LSpelling: string;
 begin
   // "System" types are not visited, because it is assumed they are already implemented by the language requiring the translation
   // CanIncludeCursor is used to filter types from non-target libraries
@@ -1095,9 +1096,13 @@ begin
         if ACursor.Kind in [TCursorKind.StructDecl, TCursorKind.UnionDecl, TCursorKind.EnumDecl, TCursorKind.TypedefDecl, TCursorKind.ParmDecl] then
         begin
           // DPN
-          if (ACursor.Kind = TCursorKind.EnumDecl) and (FProject.EnumHandling = TEnumHandling.ConvertToConst) then
+          LIsTypeDefEnum := (ACursor.Kind = TCursorKind.TypedefDecl) and (ACursor.CursorType.CanonicalType.Kind = TTypeKind.Enum);
+          if ((ACursor.Kind = TCursorKind.EnumDecl) or LIsTypeDefEnum) and (FProject.EnumHandling = TEnumHandling.ConvertToConst) then
           begin
-            FConsts.Add(ACursor);
+            if LIsTypeDefEnum then
+              FTypes.Add(ACursor)
+            else
+              FConsts.Add(ACursor);
             if not ACursor.Spelling.IsEmpty then
               FEnumConsts.Add(ACursor.Spelling, ACursor);
           end
@@ -1295,9 +1300,9 @@ begin
     anyway in case future libclang versions do. }
   //!!!!! FCommentWriter.WriteComment(ACursor);
 
+  IsNumeric := False;
   LValueStream := TStringStream.Create;
   try
-
     for I := 1 to TokenList.Count - 1 do
     begin
       S := Tokens[I];
@@ -1335,7 +1340,6 @@ begin
         IsString := True;
       end;
 
-      IsNumeric := False;
       { Check for type suffixes (as in 123LL) and remove those }
       C := S.Chars[0];
       if ((C >= '0') and (C <= '9')) or (C = '$') then
@@ -2304,9 +2308,13 @@ begin
     end;
   end;
 
-  if (CanonType.Kind = TTypeKind.Enum) and FEnumConsts.TryGetValue(DstName, LEnumConstCursor) then
+  if (CanonType.Kind = TTypeKind.Enum) and (FEnumConsts.TryGetValue(DstName, LEnumConstCursor) or FEnumConsts.TryGetValue(SrcName, LEnumConstCursor)) then
   begin
-    FWriter.WriteLn('%s = %s;', [DstName, GetDelphiTypeName(LEnumConstCursor.EnumDeclIntegerType)]);
+    SrcName := GetDelphiTypeName(LEnumConstCursor.EnumDeclIntegerType);
+    // TODO: Determine whether or not the type can actually be determined
+    if SrcName.IsEmpty then
+      SrcName := 'Integer';
+    FWriter.WriteLn('%s = %s;', [DstName, SrcName]);
     Exit;
   end;
 
