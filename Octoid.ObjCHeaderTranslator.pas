@@ -634,6 +634,7 @@ procedure TObjCHeaderTranslator.DoSetupTypeUnitMap;
 begin
   TypeUnitMap.Add('id', 'Macapi.ObjCRuntime');
   TypeUnitMap.Add('dispatch_queue_t', 'Macapi.Dispatch');
+  TypeUnitMap.Add('CGSize', 'Macapi.CocoaTypes|iOSapi.CoreGraphics');
 end;
 
 function TObjCHeaderTranslator.GenerateAnonymousTypeName(const AName: string): string;
@@ -682,7 +683,7 @@ var
   LTypeName: string;
 begin
   case ACursor.Kind of
-    TCursorKind.ParmDecl:
+    TCursorKind.ParmDecl, TCursorKind.FieldDecl:
     begin
       LTypeName := GetDelphiTypeName(ACursor.CursorType, True);
       CheckTypeUnitMap(LTypeName);
@@ -693,9 +694,21 @@ end;
 procedure TObjCHeaderTranslator.CheckTypeUnitMap(const ATypeName: string);
 var
   LUnitName: string;
+  LParts: TArray<string>;
 begin
-  if TypeUnitMap.TryGetValue(ATypeName, LUnitName) and (FInterfaceUnits.IndexOf(LUnitName) = -1) then
-    FInterfaceUnits.Add(LUnitName);
+  if TypeUnitMap.TryGetValue(ATypeName, LUnitName) then
+  begin
+    LParts := LUnitName.Split(['|']);
+    if Length(LParts) > 1 then
+    begin
+      if SameText(FProject.TargetPlatform, cTargetPlatformMacOS) then
+        LUnitName := LParts[0]
+      else
+        LUnitName := LParts[1];
+    end;
+    if FInterfaceUnits.IndexOf(LUnitName) = -1 then
+      FInterfaceUnits.Add(LUnitName);
+  end;
 end;
 
 procedure TObjCHeaderTranslator.DiscoverBlockMethodParams(const ACursor: TCursor; const AClassName: string);
@@ -1740,8 +1753,7 @@ end;
 
 function TObjCHeaderTranslator.CanIncludeCursor(const ACursor: TCursor): Boolean;
 var
-  LFileName, LFramework: string;
-  LSpelling: string;
+  LFileName, LFramework, LSpelling: string;
 begin
   CheckTypeMaps(ACursor);
   LFileName := GetCursorFileName(ACursor);
