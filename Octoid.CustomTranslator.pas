@@ -1103,7 +1103,7 @@ begin
               FTypes.Add(ACursor)
             else
               FConsts.Add(ACursor);
-            if not ACursor.Spelling.IsEmpty then
+            if not ACursor.Spelling.IsEmpty and not FEnumConsts.ContainsKey(ACursor.Spelling) then
               FEnumConsts.Add(ACursor.Spelling, ACursor);
           end
           else if not ACursor.IsAnonymous and not IsEnumTypeDef(ACursor) then
