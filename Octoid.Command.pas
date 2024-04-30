@@ -384,7 +384,10 @@ begin
     if FProject.TargetPlatform.Equals(cTargetPlatformMacOS) then
       FProject.AddCmdLineArg('x86_64-apple-darwin10')
     else if FProject.TargetPlatform.Equals(cTargetPlatformIOS) then
+    begin
       FProject.AddCmdLineArg('arm-apple-darwin10');
+      FProject.AddCmdLineArg('-DTARGET_OS_IPHONE=1');
+    end;
     for I := 0 to FExtraSwitches.Count - 1 do
       FProject.AddCmdLineArg(FExtraSwitches[I]);
 
