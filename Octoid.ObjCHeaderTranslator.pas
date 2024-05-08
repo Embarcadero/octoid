@@ -294,13 +294,18 @@ end;
 procedure TDelphiMethod.ExpandMethodName;
 var
   I: Integer;
+  LPart: string;
 begin
   if (Length(ObjCMethodNameParts) > 1) and (MethodNamePartsCount < Length(ObjCMethodNameParts) - 1) then
   begin
     Inc(MethodNamePartsCount);
     MethodName := ObjCMethodNameParts[0];
     for I := 1 to MethodNamePartsCount do
-      MethodName := MethodName + UpCase(ObjCMethodNameParts[I].Chars[0]) + ObjCMethodNameParts[I].Substring(1);
+    begin
+      LPart := ObjCMethodNameParts[I];
+      if not LPart.IsEmpty then
+        MethodName := MethodName + UpCase(ObjCMethodNameParts[I].Chars[0]) + ObjCMethodNameParts[I].Substring(1);
+    end;
   end;
 end;
 
