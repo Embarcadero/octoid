@@ -34,6 +34,7 @@ type
     procedure ExpandMethodName;
     procedure ExpandObjCMethodName;
     function IsNameMismatched: Boolean;
+    function IsSame(const AMethod: TDelphiMethod): Boolean;
   end;
 
   TDelphiMethods = class(TList<TDelphiMethod>)
@@ -41,6 +42,7 @@ type
     class var FComparer: IComparer<TDelphiMethod>;
   public
     function AddMethod(AMethod: TDelphiMethod): Integer;
+    function HasMethod(const AMethod: TDelphiMethod): Boolean;
     function MethodExists(const AIndex: Integer): Boolean;
     function ResolveCollisions(const AMethod: TDelphiMethod): Boolean;
     procedure ResolveMethods;
@@ -330,6 +332,11 @@ begin
   Result := IsMismatched or ((Length(ObjCMethodNameParts) > 0) and not LMethodName.Equals(ObjCMethodNameParts[0]));
 end;
 
+function TDelphiMethod.IsSame(const AMethod: TDelphiMethod): Boolean;
+begin
+  Result := AMethod.ObjCMethodName.Equals(ObjCMethodName);
+end;
+
 { TBlockMethod }
 
 procedure TBlockMethod.ExpandObjCMethodName;
@@ -341,7 +348,7 @@ end;
 
 function TDelphiMethods.AddMethod(AMethod: TDelphiMethod): Integer;
 begin
-  if AMethod.IsAvailable then
+  if AMethod.IsAvailable and not HasMethod(AMethod) then
   begin
     AMethod.ExpandObjCMethodName;
     AMethod.Index := Count;
@@ -349,6 +356,21 @@ begin
   end
   else
     Result := -1;
+end;
+
+function TDelphiMethods.HasMethod(const AMethod: TDelphiMethod): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  for I := 0 to Count - 1 do
+  begin
+    if Items[I].IsSame(AMethod) then
+    begin
+      Result := True;
+      Break;
+    end;
+  end;
 end;
 
 function TDelphiMethods.MethodExists(const AIndex: Integer): Boolean;
@@ -359,7 +381,10 @@ begin
   for I := 0 to Count - 1 do
   begin
     if (AIndex <> I) and Items[I].Equals(Items[AIndex]) then
-      Exit(True); // <======
+    begin
+      Result := True;
+      Break;
+    end;
   end;
 end;
 
