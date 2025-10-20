@@ -5,6 +5,7 @@ interface
 const
   cSDKUserIncludeFolder = 'usr\include\';
   cSDKFrameworksFolder = 'System\Library\Frameworks\';
+  cSDKSubFrameworksFolder = 'System\Library\SubFrameworks\';
   cSDKPrivateFrameworksFolder = 'System\Library\PrivateFrameworks\';
   cSDKUserLibClangIncludePath = 'usr\lib\clang\include';
 

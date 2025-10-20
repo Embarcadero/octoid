@@ -376,7 +376,7 @@ begin
     else
       FProject.AddCmdLineArg(Format('-isystem%s', [TPath.Combine(FProject.SdkRoot, cSDKUserLibClangIncludePath)]));
     FProject.AddCmdLineArg(Format('-F%s', [TPath.Combine(FProject.SdkRoot, cSDKFrameworksFolder)]));
-    FProject.AddCmdLineArg(Format('-F%s', [TPath.Combine(FProject.SdkRoot, cSDKFrameworksFolder)]));
+    FProject.AddCmdLineArg(Format('-F%s', [TPath.Combine(FProject.SdkRoot, cSDKSubFrameworksFolder)]));
     FProject.AddCmdLineArg('-x');
     FProject.AddCmdLineArg('objective-c');
     FProject.AddCmdLineArg('-ferror-limit=' + Max(FErrorLimit, cErrorLimitDefault).ToString); //!!!!
