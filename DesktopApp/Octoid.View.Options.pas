@@ -121,6 +121,7 @@ begin
   ErrorLimitEdit.Text := FConfig.ErrorLimit.ToString;
   TypeMapFileNameEdit.Text := FConfig.TypeMapFileName;
   TypeUnitMapFileNameEdit.Text := FConfig.TypeUnitMapFileName;
+  AdditionalOptionsEdit.Text := FConfig.AdditionalOptions;
   inherited;
 end;
 
@@ -142,6 +143,7 @@ begin
   FConfig.ErrorLimit := StrToInt(ErrorLimitEdit.Text);
   FConfig.TypeMapFileName := TypeMapFileNameEdit.Text;
   FConfig.TypeUnitMapFileName := TypeUnitMapFileNameEdit.Text;
+  FConfig.AdditionalOptions := AdditionalOptionsEdit.Text;
   FConfig.Save;
 end;
 
